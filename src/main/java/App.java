@@ -10,7 +10,7 @@ public class App
     }
     public static String getHelloWorld() {
 
-		return "Hello Subir";
+		return "Hello World";
 
 	}
 
