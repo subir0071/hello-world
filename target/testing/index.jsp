@@ -54,13 +54,15 @@ function CallInternal() {
 </head>
 
 <body>
+
 	<h2>Hello World!</h2> <br>
-	<button name="btn" value="Cross Domain Call" onclick="javascript:CallCrossDomain()"></button><br>
+	<input type="button" name="btn" value="Cross Domain Call" onclick="javascript:CallCrossDomain()"></input><br>
 	<!-- Below is a false issue -->
 	<input name="password" type="password">
 	
 	<!-- Below is a true issue -->
 	<input name="password" type="password" value="Qwertypoi" readonly="readonly">
+
 
 </body>
 </html>
