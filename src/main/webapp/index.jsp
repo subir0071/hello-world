@@ -63,6 +63,7 @@ function CallInternal() {
 	<!-- Below is a true issue -->
 	<input name="password" type="password" value="Qwertypoi" readonly="readonly">
 
-
+<h1>Below lines come from included jsp</h1>
+<jsp:include page="common.jsp" />  
 </body>
 </html>

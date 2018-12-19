@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FrameworkInput type="Java" xmlns="http://www.ibm.com/FrameworkInput">
+	<WaflFile>D:\Java_MAVEN-JUNIT_War_code\Code\Code_frameworksCLI.wafl</WaflFile>
+	<LogConfig>D:\Java_MAVEN-JUNIT_War_code\Code\Code_frameworksCLI_waflLogConfig.xml</LogConfig>
+	<HandlerJarDir>C:\Program Files (x86)\IBM\AppScanSource\waflgens</HandlerJarDir>
+	<ProjectFile>D:\Java_MAVEN-JUNIT_War_code\Code\Code.epf</ProjectFile>
+	<JavaInfo>
+		<WebContentRoot>D:\Java_MAVEN-JUNIT_War_code\Code\Code_staging</WebContentRoot>
+		<WalaScopeFile>D:\Java_MAVEN-JUNIT_War_code\Code\Code_staging\Code.scope</WalaScopeFile>
+		<Options>
+			<Property name="javaee.core.jsp.precompiler" value="tomcat"></Property>
+			<Property name="javaee.core.jsp.precompiler.version" value="70"></Property>
+			<Property name="javaee.core.jsp.package" value="Code"></Property>
+			<Property name="javaee.core.replaceSetGetAttributeCalls" value="false"></Property>
+			<Property name="javaee.core.loadExternalDTD" value="true"></Property>
+		</Options>
+	</JavaInfo>
+</FrameworkInput>

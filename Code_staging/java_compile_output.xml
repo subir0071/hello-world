@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Output build_failed="false" build_had_errors="false">
+  <Compile base="D:\Java_MAVEN-JUNIT_War_code\Code\"
+    dest="D:\Java_MAVEN-JUNIT_War_code\Code\Code_staging" source_dir="D:\Java_MAVEN-JUNIT_War_code\Code\src\main\java\">
+    <File name="com\test\App.java" source_dir="D:\Java_MAVEN-JUNIT_War_code\Code\src\main\java">
+      <Class name="com\test\App.class"/>
+    </File>
+  </Compile>
+  <Compile base="D:\Java_MAVEN-JUNIT_War_code\Code\"
+    dest="D:\Java_MAVEN-JUNIT_War_code\Code\Code_staging" source_dir="D:\Java_MAVEN-JUNIT_War_code\Code\src\test\java\">
+    <File name="com\test\AppTest.java" source_dir="D:\Java_MAVEN-JUNIT_War_code\Code\src\test\java">
+      <Class name="com\test\AppTest.class"/>
+    </File>
+  </Compile>
+</Output>
