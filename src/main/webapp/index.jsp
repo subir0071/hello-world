@@ -65,5 +65,6 @@ function CallInternal() {
 
 <h1>Below lines come from included jsp</h1>
 <jsp:include page="common.jsp" />  
+	<h1>Hello FLUX!</h1>
 </body>
 </html>
