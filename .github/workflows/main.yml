@@ -22,4 +22,4 @@ jobs:
           lsof -p $$ | grep FIFO || echo "stdin is not a FIFO"
       - name: Run ripgrep without specifying a file (will fail, so debug)
         run: |
-          sudo rg --debug "Hello"
+          sudo rg --debug "Hello" ./
