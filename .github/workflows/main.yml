@@ -20,4 +20,7 @@ jobs:
       - name: Run ripgrep on a file
         run: rg "Hello" hello.txt  
       - name: Run ripgrep without specifying a file (will fail, so debug)
-        run: rg "Hello"
+        run: | 
+          mkdir -p test/test1
+          cd test
+          rg "Hello"
