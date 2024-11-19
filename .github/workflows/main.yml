@@ -23,4 +23,4 @@ jobs:
         run: | 
           mkdir -p test/test1
           cd test
-          rg "Hello"
+          rg --debug "Hello"
