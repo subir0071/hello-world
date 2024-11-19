@@ -18,7 +18,5 @@ jobs:
       - name: Run ripgrep on a file
         run: rg "Hello" hello.txt  
       - name: Run ripgrep without specifying a file (will fail, so debug)
-        run: | 
-          mkdir -p test/test1
-          cd test
-          rg --debug "Hello"
+        run: |
+          sudo rg --debug "Hello"
