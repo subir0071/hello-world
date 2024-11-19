@@ -8,9 +8,10 @@ jobs:
       - name: Install latest ripgrep in gha
         run: |
           sudo apt update
-          wget https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
-          tar -xvf ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
-          sudo mv ripgrep-14.1.1-x86_64-unknown-linux-musl/rg /usr/local/bin
+          # wget https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
+          # tar -xvf ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
+          # sudo mv ripgrep-14.1.1-x86_64-unknown-linux-musl/rg /usr/local/bin
+          sudo apt-get install ripgrep
           rg --version
       - name: Run ripgrep on stdinput
         run: echo "Hello, world!" | rg "Hello"
