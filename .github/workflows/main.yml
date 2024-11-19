@@ -17,6 +17,9 @@ jobs:
         run: echo "Hello, world!" > hello.txt
       - name: Run ripgrep on a file
         run: rg "Hello" hello.txt  
+      - name: Check for FIFOs
+        run: |
+          find . -type p
       - name: Run ripgrep without specifying a file (will fail, so debug)
         run: |
           sudo rg --debug "Hello"
