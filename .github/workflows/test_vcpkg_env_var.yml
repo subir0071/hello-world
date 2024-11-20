@@ -1,0 +1,10 @@
+name: Testing ripgrep in gha 
+
+on: push
+jobs:
+  testing-ripgrep:
+    runs-on: ubuntu-2204
+    steps:
+      - name: Install latest ripgrep in gha
+        run: |
+          echo $VCPKG_INSTALLATION_ROOT
