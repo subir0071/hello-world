@@ -7,4 +7,4 @@ jobs:
     steps:
       - name: Install latest ripgrep in gha
         run: |
-          echo $VCPKG_INSTALLATION_ROOT
+          echo $env:VCPKG_INSTALLATION_ROOT
