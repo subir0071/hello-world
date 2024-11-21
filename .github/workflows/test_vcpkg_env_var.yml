@@ -3,7 +3,7 @@ name: Testing ripgrep in gha
 on: push
 jobs:
   testing-vcpkg:
-    runs-on: ubuntu-22.04
+    runs-on: windows-2022
     steps:
       - name: Install latest ripgrep in gha
         run: |
