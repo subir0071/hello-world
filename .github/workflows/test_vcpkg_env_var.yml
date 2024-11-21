@@ -3,7 +3,7 @@ name: Testing vcpkg env var in gha
 on: push
 jobs:
   testing-vcpkg:
-    runs-on: windows-2022
+    runs-on: windows-2019
     steps:
       - name: Check vcpkg env var in gha
         run: |
