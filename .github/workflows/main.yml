@@ -1,6 +1,6 @@
 name: Testing ripgrep in gha 
 
-on: push
+on: workflow_dispatch
 jobs:
   testing-ripgrep:
     runs-on: ubuntu-latest
