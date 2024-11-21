@@ -1,4 +1,4 @@
-name: Testing ripgrep in gha 
+name: Testing vcpkg env var in gha 
 
 on: push
 jobs:
