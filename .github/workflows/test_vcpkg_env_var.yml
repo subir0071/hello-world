@@ -5,6 +5,6 @@ jobs:
   testing-vcpkg:
     runs-on: windows-2022
     steps:
-      - name: Install latest ripgrep in gha
+      - name: Check vcpkg env var in gha
         run: |
           echo $env:VCPKG_INSTALLATION_ROOT
