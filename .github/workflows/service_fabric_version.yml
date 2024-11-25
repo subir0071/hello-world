@@ -12,7 +12,7 @@ jobs:
       shell: pwsh
       run: |
         # Path to the fabrichost.exe (usually located in the Service Fabric installation directory)
-        $fabrichostPath = "C:\Program Files\Microsoft Service Fabric\bin\abrichost.exe"
+        $fabrichostPath = "C:\Program Files\Microsoft Service Fabric\bin\fabrichost.exe"
         
         # Check if fabrichost.exe exists
         if (Test-Path $fabrichostPath) {
