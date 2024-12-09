@@ -15,4 +15,5 @@ jobs:
       run: |
         echo "Java 8 Home $JAVA_HOME_8_X64"
         echo "****************************"
-        java -version
+        cd $JAVA_HOME_8_X64
+        ./java -version
