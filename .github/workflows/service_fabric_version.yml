@@ -18,3 +18,27 @@ jobs:
         cd $JAVA_HOME_8_X64/bin
         ls -l
         ./java -version
+
+    - name: Java 11 details
+      run: |
+        echo "Java 11 Home $JAVA_HOME_11_X64"
+        echo "****************************"
+        cd $JAVA_HOME_11_X64/bin
+        ls -l
+        ./java -version
+
+    - name: Java 17 details
+      run: |
+        echo "Java 17 Home $JAVA_HOME_8_X64"
+        echo "****************************"
+        cd $JAVA_HOME_17_X64/bin
+        ls -l
+        ./java -version
+
+    - name: Java 21 details
+      run: |
+        echo "Java 21 Home $JAVA_HOME_8_X64"
+        echo "****************************"
+        cd $JAVA_HOME_21_X64/bin
+        ls -l
+        ./java -version
