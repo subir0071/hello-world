@@ -15,6 +15,6 @@ jobs:
       run: |
         echo "Java 8 Home $JAVA_HOME_8_X64"
         echo "****************************"
-        cd $JAVA_HOME_8_X64
+        cd $JAVA_HOME_8_X64/bin
         ls -l
-        java -version
+        ./java -version
