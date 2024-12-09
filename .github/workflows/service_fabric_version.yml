@@ -1,24 +1,18 @@
-name: Check Service Fabric Host Version
+name: Java CI Workflow
 
 on:
-  workflow_dispatch: # Manually trigger the workflow
+  workflow_dispatch:
 
 jobs:
-  check-version:
-    runs-on: windows-2022
+  build:
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Check for Service Fabric version
-      shell: pwsh
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Java 8 details
       run: |
-        # Path to the fabrichost.exe (usually located in the Service Fabric installation directory)
-        $fabrichostPath = "C:\Program Files\Microsoft Service Fabric\bin\fabrichost.exe"
-        
-        # Check if fabrichost.exe exists
-        if (Test-Path $fabrichostPath) {
-            # Get version of fabrichost.exe using PowerShell
-            $fileVersion = (Get-Item $fabrichostPath).VersionInfo.FileVersion
-            Write-Host "fabrichost.exe version: $fileVersion"
-        } else {
-            Write-Host "fabrichost.exe not found at the expected location."
-        }
+        echo "Java 8 Home $JAVA_HOME_8_X64"
+        echo "****************************"
+        java -version
