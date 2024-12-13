@@ -1,0 +1,13 @@
+name: Testing git credential manager
+
+on: workflow_dispatch
+jobs:
+  git-cred-mnager:
+    runs-on: windows-2022
+    steps:
+    - id: windows-set-credential-store
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        git credential-manager --version
+        git credential-manager diagnose
