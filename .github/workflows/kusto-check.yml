@@ -3,7 +3,7 @@ name: Testing kusto cli
 on: workflow_dispatch
 jobs:
   sudo:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/setup-dotnet@v1
       with:
