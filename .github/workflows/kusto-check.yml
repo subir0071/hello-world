@@ -7,7 +7,7 @@ jobs:
     steps:
     - uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 8.0
     - run: |
         curl -L "https://www.nuget.org/api/v2/package/Microsoft.Azure.Kusto.Tools/12.2.8" > kustocli.zip
         unzip kustocli.zip
