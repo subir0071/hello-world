@@ -3,7 +3,7 @@ name: Testing windows 2025
 on: workflow_dispatch
 jobs:
   sudo:
-    runs-on: windows2025
+    runs-on: windows-2025
     steps:
     - name: test w25
       run: echo "testing w25"
