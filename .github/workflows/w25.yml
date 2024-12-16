@@ -1,4 +1,4 @@
-name: Testing kusto cli
+name: Testing windows 2025
 
 on: workflow_dispatch
 jobs:
