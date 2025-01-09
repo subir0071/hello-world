@@ -1,0 +1,60 @@
+name: C++ Build and Linker Test on Windows 2022
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022  # Specifies the Windows Server 2022 runner
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Checks out your repository code
+
+    - name: Set up Visual Studio 2019
+      uses: actions/setup-msbuild@v1
+      with:
+        vs-version: '2019'  # Sets up MSVC 2019 (can change to 2022 if needed)
+
+    - name: Install CMake
+      uses: actions/setup-cmake@v3
+      with:
+        cmake-version: '3.21.1'  # Install a specific version of CMake (update as needed)
+
+    - name: Install dependencies (using vcpkg or other package managers)
+      run: |
+        # Install dependencies via vcpkg, if applicable
+        # Download vcpkg if needed
+        git clone https://github.com/microsoft/vcpkg.git
+        cd vcpkg
+        ./bootstrap-vcpkg.bat
+        ./vcpkg install fmt  # Example: install fmt library (replace with your dependencies)
+
+    - name: Create build directory
+      run: mkdir -p build
+
+    - name: Configure CMake project
+      run: |
+        cd build
+        cmake .. -G "Visual Studio 16 2019"  # Configure project using Visual Studio generator
+
+    - name: Build project
+      run: |
+        cd build
+        cmake --build . --config Debug  # Build the project in Debug mode
+
+    - name: Run tests
+      run: |
+        cd build
+        ctest --config Debug  # Run the tests, replace with your test framework
+
+    - name: Debug Linker Warnings (Optional)
+      run: |
+        # Check for specific linker warnings or errors
+        if findstr /C:"LNK" build/*.log; then
+          echo "Linker errors found!";
+          exit 1;
+        else
+          echo "Linking successful!";
+        fi
+
