@@ -1,59 +1,59 @@
-name: C++ Build and Linker Test on Windows 2022
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple platforms - MSVC test
 
 on:
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: windows-2022  # Specifies the Windows Server 2022 runner
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      #
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-2022
+            c_compiler: cl
+            cpp_compiler: cl
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Checks out your repository code
+    - uses: actions/checkout@v4
 
-    - name: Set up Visual Studio 2019
-      uses: microsoft/setup-msbuild@v1
-      with:
-        vs-version: '2019'  # Sets up MSVC 2019 (can change to 2022 if needed)
-
-    - name: Install CMake
-      uses: cmake/setup-cmake@v3
-      with:
-        cmake-version: '3.21.1'  # Install a specific version of CMake (update as needed)
-
-    - name: Install dependencies (using vcpkg or other package managers)
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
       run: |
-        # Install dependencies via vcpkg, if applicable
-        # Download vcpkg if needed
-        git clone https://github.com/microsoft/vcpkg.git
-        cd vcpkg
-        ./bootstrap-vcpkg.bat
-        ./vcpkg install fmt  # Example: install fmt library (replace with your dependencies)
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Create build directory
-      run: mkdir -p build
+    - name: Configure CMake
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -S ${{ github.workspace }}
 
-    - name: Configure CMake project
-      run: |
-        cd build
-        cmake .. -G "Visual Studio 16 2019"  # Configure project using Visual Studio generator
+    - name: Build
+      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-    - name: Build project
-      run: |
-        cd build
-        cmake --build . --config Debug  # Build the project in Debug mode
-
-    - name: Run tests
-      run: |
-        cd build
-        ctest --config Debug  # Run the tests, replace with your test framework
-
-    - name: Debug Linker Warnings (Optional)
-      run: |
-        # Check for specific linker warnings or errors
-        if findstr /C:"LNK" build/*.log; then
-          echo "Linker errors found!";
-          exit 1;
-        else
-          echo "Linking successful!";
-        fi
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      run: ctest --build-config ${{ matrix.build_type }}
