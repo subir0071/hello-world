@@ -12,12 +12,12 @@ jobs:
       uses: actions/checkout@v2  # Checks out your repository code
 
     - name: Set up Visual Studio 2019
-      uses: actions/setup-msbuild@v1
+      uses: microsoft/setup-msbuild@v1
       with:
         vs-version: '2019'  # Sets up MSVC 2019 (can change to 2022 if needed)
 
     - name: Install CMake
-      uses: actions/setup-cmake@v3
+      uses: cmake/setup-cmake@v3
       with:
         cmake-version: '3.21.1'  # Install a specific version of CMake (update as needed)
 
@@ -57,4 +57,3 @@ jobs:
         else
           echo "Linking successful!";
         fi
-
