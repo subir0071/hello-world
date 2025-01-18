@@ -1,0 +1,21 @@
+name: Install Ninja Build on Ubuntu
+
+on:
+  workflow_dispatch:
+
+jobs:
+  install-ninja:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Checkout your repository (optional, if you need code)
+
+    - name: Update package lists
+      run: sudo apt-get update  # Update package lists for upgrades
+
+    - name: Install Ninja build system
+      run: sudo apt-get install -y ninja-build  # Install Ninja build
+
+    - name: Verify Ninja installation
+      run: ninja --version  # Verify the installation by checking the version
