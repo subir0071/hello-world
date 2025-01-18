@@ -1,0 +1,24 @@
+name: Install Azure Functions Core Tools
+
+on:
+  workflow_dispatch:
+
+jobs:
+  install-azure-functions-core-tools:
+    runs-on: windows-latest  # Use the latest Windows runner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2  # Optional: Checkout your repository (if needed)
+      
+    - name: Install Chocolatey (if not installed)
+      shell: powershell
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force; 
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    - name: Install Azure Functions Core Tools 3 with Chocolatey
+      run: choco install azure-functions-core-tools-3 --params "/x64"
+
+    - name: Verify Azure Functions Core Tools installation
+      run: func --version  # Verify the installation by checking the version
