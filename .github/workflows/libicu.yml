@@ -1,26 +1,23 @@
-name: Install libicu and Test
+name: Install ICU Globalization and Dependencies
 
 on:
   workflow_dispatch:
 
 jobs:
-  install-libicu:
-    runs-on: ubuntu-latest
+  install-icu:
+    runs-on: ubuntu-latest  # GitHub-hosted runner for Linux
     
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v2  # Optional: Checkout your code if needed
 
-    - name: Update apt and install libicu
+    - name: Set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT to 0
+      run: echo "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0" >> $GITHUB_ENV  # Set environment variable
+
+    - name: Install ICU Globalization Libraries
       run: |
         sudo apt-get update
         sudo apt-get install -y libicu-dev
-        
+
     - name: Verify libicu installation
-      run: |
-        icu-config --version || echo "icu-config command not found, but libicu is installed."
-        
-    - name: Run your script or build
-      run: |
-        # Add the commands to run your script or application that depends on libicu
-        echo "Running build or tests that require libicu..."
+      run: icu-config --version  # Verify that ICU is installed and available
