@@ -1,4 +1,4 @@
-name: Test
+name: Test android emulator
 
 on:
   workflow_dispatch:
