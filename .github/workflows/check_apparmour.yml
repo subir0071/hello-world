@@ -1,0 +1,28 @@
+name: Check AppArmor Status on Ubuntu Runners
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-apparmor:
+    runs-on: ${{ matrix.ubuntu-image }}
+    strategy:
+      matrix:
+        ubuntu-image: 
+          - ubuntu-20.04
+          - ubuntu-22.04
+          - ubuntu-22.10
+          - ubuntu-24.04  # Add more if new versions are released
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Check AppArmor service status
+        run: |
+          echo "Checking AppArmor status on ${{ matrix.ubuntu-image }}..."
+          # Check if apparmor is installed and if it's running
+          if systemctl is-active --quiet apparmor; then
+            echo "AppArmor is enabled"
+          else
+            echo "AppArmor is disabled"
+          fi
