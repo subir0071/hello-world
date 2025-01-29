@@ -18,9 +18,10 @@ jobs:
         ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force --name android35 --device "Nexus 5X" --package "system-images;android-35;google_apis;$ANDROID_ARCH"
         echo "Listing avds...."
         echo "Android home:: $ANDROID_HOME"
+        echo "ANDROID_AVD_HOME:: $ANDROID_AVD_HOME"
         echo "emulator command..."
         ls ${ANDROID_HOME}/emulator/emulator
         echo "Check for errors......"
         ${ANDROID_HOME}/emulator/emulator -verbose -list-avds
-        abd logcat
+
    #     ${ANDROID_HOME}/emulator/emulator -list-avds
