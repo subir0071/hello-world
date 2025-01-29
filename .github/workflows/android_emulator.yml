@@ -15,12 +15,12 @@ jobs:
         export ANDROID_ARCH="x86_64"
         ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "system-images;android-35;google_apis;$ANDROID_ARCH" platform-tools emulator
         echo "createing avd..."
-        ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force --name android35 --device "Nexus 5X" --package "system-images;android-35;google_apis;$ANDROID_ARCH" --verbose
+        ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force --name android35 --device "Nexus 5X" --package "system-images;android-35;google_apis;$ANDROID_ARCH"
         echo "Listing avds...."
         echo "Android home:: $ANDROID_HOME"
         echo "emulator command..."
         ls ${ANDROID_HOME}/emulator/emulator
         echo "Check for errors......"
         ${ANDROID_HOME}/emulator/emulator -verbose -list-avds
-        
+        abd logcat
    #     ${ANDROID_HOME}/emulator/emulator -list-avds
