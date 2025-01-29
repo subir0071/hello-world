@@ -21,7 +21,6 @@ jobs:
         echo "ANDROID_AVD_HOME:: $ANDROID_AVD_HOME"
         echo "emulator command..."
         ls ${ANDROID_HOME}/emulator/emulator
-        echo "Check for errors......"
-        ${ANDROID_HOME}/emulator/emulator -verbose -list-avds
+        ${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager list avd
 
    #     ${ANDROID_HOME}/emulator/emulator -list-avds
