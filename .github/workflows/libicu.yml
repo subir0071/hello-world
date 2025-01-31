@@ -11,6 +11,8 @@ jobs:
       with:
         dotnet-version: 2.1.x
     - run: |
+        sudo apt-get update
+        sudo apt-get -U install -y libicu-dev
         curl -L "https://www.nuget.org/api/v2/package/Microsoft.Azure.Kusto.Tools/6.0.1" > kustocli.zip
         unzip kustocli.zip
         export KUSTO_CLI_PATH=$(find "$PWD" -name Kusto.Cli.dll | grep -m 1 netcore)
