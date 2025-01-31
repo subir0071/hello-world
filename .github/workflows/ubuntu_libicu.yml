@@ -1,0 +1,24 @@
+name: Install ICU Globalization on Linux
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  install-icu:
+    runs-on: ubuntu-latest  # Specify the Linux runner
+
+    steps:
+      - name: Set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT variable
+        run: |
+          echo "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0" >> $GITHUB_ENV  # Set environment variable
+
+      - name: Install libicu-dev
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libicu-dev
+        if: runner.os == 'Linux'  # Run this only on Linux
