@@ -1,12 +1,7 @@
 name: Install ICU Globalization on Linux
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   install-icu:
