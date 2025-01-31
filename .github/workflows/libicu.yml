@@ -4,20 +4,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  install-icu:
-    runs-on: ubuntu-latest  # GitHub-hosted runner for Linux
-    
+  sudo:
+    runs-on: ubuntu-24.04
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Optional: Checkout your code if needed
-
-    - name: Set DOTNET_SYSTEM_GLOBALIZATION_INVARIANT to 0
-      run: echo "DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=0" >> $GITHUB_ENV  # Set environment variable
-
-    - name: Install ICU Globalization Libraries
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libicu-dev
-
-    - name: Verify libicu installation
-      run: icu-config --version  # Verify that ICU is installed and available
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 2.1.x
+    - run: |
+        curl -L "https://www.nuget.org/api/v2/package/Microsoft.Azure.Kusto.Tools/6.0.1" > kustocli.zip
+        unzip kustocli.zip
+        export KUSTO_CLI_PATH=$(find "$PWD" -name Kusto.Cli.dll | grep -m 1 netcore)
+        echo $KUSTO_CLI_PATH
+        dotnet $KUSTO_CLI_PATH "https://help.kusto.windows.net/Samples;Fed=true"
