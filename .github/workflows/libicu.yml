@@ -14,11 +14,10 @@ jobs:
     - name: apt get update
       run: |
        sudo apt-get update
+       
     - name: Install libicu
-    
       run: |
-        sudo apt-get -U install -y libicu-dev
-        sudo apt install libicu74
+        sudo apt install -y libicu74
     
     - run: |
         curl -L "https://www.nuget.org/api/v2/package/Microsoft.Azure.Kusto.Tools/6.0.1" > kustocli.zip
