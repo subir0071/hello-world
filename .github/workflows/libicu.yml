@@ -15,10 +15,10 @@ jobs:
       run: |
        sudo apt-get update
        
-    - name: Install libicu
-      run: |
-        wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb
-        sudo dpkg -i libicu70_70.1-2_amd64.deb    
+    # - name: Install libicu
+    #   run: |
+    #     wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb
+    #     sudo dpkg -i libicu70_70.1-2_amd64.deb    
     - run: |
         curl -L "https://www.nuget.org/api/v2/package/Microsoft.Azure.Kusto.Tools/6.0.1" > kustocli.zip
         unzip kustocli.zip
