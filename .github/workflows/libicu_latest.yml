@@ -1,9 +1,7 @@
 name: Setup with ICU on Ubuntu 24
 
 on: 
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   setup-icu:
@@ -12,6 +10,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
+      - name: Update and install ICU
+        run: |
+          sudo apt update
+          sudo apt install -y libicu-dev
 
       - name: Verify ICU installation
         run: |
