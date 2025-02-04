@@ -3,8 +3,6 @@ name: "Test libicu latest"
 on:
   push:
   workflow_dispatch:
-    
-      
 jobs:
   build:
     if: github.event_name == 'push' && contains(toJson(github.event.commits), '***NO_CI***') == false && contains(toJson(github.event.commits), '[ci skip]') == false && contains(toJson(github.event.commits), '[skip ci]') == false
@@ -24,7 +22,7 @@ jobs:
     - name: Setup .NET Core SDK
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.x
+        dotnet-version: 8.0.x
 
     - name: Restore
       run: dotnet restore
