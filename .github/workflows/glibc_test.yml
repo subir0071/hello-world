@@ -5,8 +5,8 @@ on:
 jobs:
   not_working:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.10-slim
+ #   container:
+ #     image: python:3.10-slim
     steps:
       - name: python version
         run: python --version
