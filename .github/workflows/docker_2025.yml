@@ -1,0 +1,26 @@
+name: testing windows runners and containers
+on:
+  workflow_dispatch:
+
+jobs:
+  windowsMatrix:
+    strategy:
+      matrix:
+        os: [ "2025" ]
+    runs-on: ${{ format('windows-{0}', matrix.os) }}
+    steps:
+      - name: "Checkout ${{ matrix.os }}"
+        uses: actions/checkout@v4
+      - name: "Version Info ${{ matrix.os }}"
+        run: |
+          $Version = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'
+          echo "Version $($Version.ReleaseId) (OS Build $($Version.CurrentMajorVersionNumber).$($Version.CurrentMinorVersionNumber).$($Version.CurrentBuildNumber).$($Version.UBR))"
+      - name: "Docker test ${{ matrix.os }} (old image)"
+        run: |
+          echo "docker run -i --pull=always --rm mcr.microsoft.com/windows/servercore:ltsc2025@sha256:f6153b44882e7ada8fa17123cfca1da3f29ea7fbe062c9e931240dc837aa4256 cmd /c ver"
+          docker run -i --pull=always --rm mcr.microsoft.com/windows/servercore:ltsc2025@sha256:f6153b44882e7ada8fa17123cfca1da3f29ea7fbe062c9e931240dc837aa4256 cmd /c ver
+        if: matrix.os == '2025'
+      - name: "Docker test ${{ matrix.os }}"
+        run: |
+          echo "docker run -i --pull=always --rm mcr.microsoft.com/windows/servercore:ltsc${{ matrix.os }} cmd /c ver"
+          docker run -i --pull=always --rm mcr.microsoft.com/windows/servercore:ltsc${{ matrix.os }} cmd /c ver
