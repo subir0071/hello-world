@@ -1,0 +1,24 @@
+name: Simple Windows Workflow
+
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-2025  # Windows environment
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '6.0'
+
+      - name: Build project
+        run: |
+          dotnet build
+          
+      - name: Run tests
+        run: |
+          dotnet test
