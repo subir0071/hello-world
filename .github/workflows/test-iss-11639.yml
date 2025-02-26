@@ -1,0 +1,54 @@
+name: Python Build and Test Workflow - 11639
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+
+    steps:
+      # Checkout the repository's code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install build
+          pip install -r requirements.txt  # If you have a requirements.txt file
+
+      # Build the package
+      - name: Build package
+        run: python -m build
+
+      # Run tests (you can modify this part to run your tests if needed)
+      - name: Run tests
+        run: |
+          # Assuming you use pytest for testing
+          pip install pytest
+          pytest --maxfail=1 --disable-warnings -q
+
+      # Optionally, you can add linting or static code analysis steps here
+
+      # Example: run flake8 for code style checks
+      - name: Run flake8
+        run: |
+          pip install flake8
+          flake8 . --max-line-length=80
+
+      # Upload artifacts (for example, build output)
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/*
+
+  # Optionally, you could add other jobs such as deploy or additional checks.
