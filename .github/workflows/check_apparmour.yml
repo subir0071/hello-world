@@ -9,9 +9,7 @@ jobs:
     strategy:
       matrix:
         ubuntu-image: 
-          - ubuntu-20.04
-          - ubuntu-22.04
-          - ubuntu-24.04 
+          - ubuntu-20.04-canary
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
