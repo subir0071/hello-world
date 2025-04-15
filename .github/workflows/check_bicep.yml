@@ -5,7 +5,7 @@ on:
 
 jobs:
   test-bicep:
-    runs-on: ubuntu-24.04  # Use the latest Ubuntu 24 runner (adjust to 'ubuntu-latest' if 24 is not available)
+    runs-on: ubuntu-20.04  # Use the latest Ubuntu 24 runner (adjust to 'ubuntu-latest' if 24 is not available)
 
     steps:
     - name: Checkout repository
