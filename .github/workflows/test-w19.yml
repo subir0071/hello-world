@@ -1,0 +1,20 @@
+name: Check SqlPackage Existence
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-sqlpackage:
+    runs-on: windows-2019
+
+    steps:
+      - name: Check if SqlPackage.exe exists
+        shell: pwsh
+        run: |
+          $path = 'C:\Program Files\Microsoft SQL Server\160\DAC\bin\SqlPackage.exe'
+          if (Test-Path $path) {
+            Write-Host "✅ SqlPackage.exe exists at $path"
+          } else {
+            Write-Host "❌ SqlPackage.exe not found at $path"
+            exit 1
+          }
