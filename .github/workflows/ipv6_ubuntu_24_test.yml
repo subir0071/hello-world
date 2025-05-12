@@ -1,4 +1,4 @@
-name: Test getent ahosts ::
+name: Test getent ahosts ipv6
 
 on:
   workflow_dispatch:
