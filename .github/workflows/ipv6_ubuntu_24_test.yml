@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
 
     steps:
-    - name: Run getent ahosts ::
+    - name: Run getent ahosts ipv6
       run: |
         echo "Testing on ${{ matrix.os }}"
         getent ahosts ::
