@@ -1,0 +1,17 @@
+name: Test getent ahosts ::
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-getent:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+
+    steps:
+    - name: Run getent ahosts ::
+      run: |
+        echo "Testing on ${{ matrix.os }}"
+        getent ahosts ::
