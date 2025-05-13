@@ -1,0 +1,26 @@
+name: Netcat Connection Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  connection-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run netcat connectivity test
+        run: |
+          set -e
+          host=$(hostname -f)
+          local_ip=$(host "$host" | head -1 | awk '{ print $NF }')
+          port=12345
+          for addr in localhost 127.0.0.1 "$host" "$local_ip"; do
+            # listen on any interface
+            nc -l 0.0.0.0 "$port" &
+            pid=$!
+            sleep 1
+            # check if can connect
+            nc -z "$addr" "$port" || echo "Connect to $addr:$port failed"
+            kill $pid || true
+            wait $pid 2>/dev/null || true
+            let port++
+          done
