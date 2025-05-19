@@ -22,8 +22,3 @@ jobs:
     - name: Install azure-streamanalytics-cicd
       run: npm install -g azure-streamanalytics-cicd
 
-    - name: Run ASA build
-      run: |
-        azure-streamanalytics-cicd build --v2 \
-          -project "asa-sample-project/asaproj.json" \
-          -outputPath "Output"
