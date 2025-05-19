@@ -6,8 +6,10 @@ on:
 jobs:
   build:
     name: Build ASA
-    runs-on: ubuntu-22.04
-
+    runs-on: ${{ matrix.os }} 
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -22,3 +24,8 @@ jobs:
     - name: test list files in bin directory
       run: |
         npm list -g azure-streamanalytics-cicd --depth=0
+
+    - name: test list files in bin directory
+      run: |
+        cd /opt/hostedtoolcache/node/22.15.0/x64/lib
+        ls -ltr
