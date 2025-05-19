@@ -1,0 +1,29 @@
+name: Build Stream Analytics
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    name: Build ASA
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.x'
+    - name: Force install azure-streamanalytics-cicd (fix for missing DLL)
+      run: npm install -g -f azure-streamanalytics-cicd
+
+    - name: Install azure-streamanalytics-cicd
+      run: npm install -g azure-streamanalytics-cicd
+
+    - name: Run ASA build
+      run: |
+        azure-streamanalytics-cicd build --v2 \
+          -project "asa-sample-project/asaproj.json" \
+          -outputPath "Output"
