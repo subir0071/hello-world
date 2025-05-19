@@ -29,3 +29,9 @@ jobs:
       run: |
         cd /opt/hostedtoolcache/node/22.15.0/x64/lib/node_modules/azure-streamanalytics-cicd
         ls -ltr
+
+    - name: Run ASA build
+      run: |
+        azure-streamanalytics-cicd build --v2 \
+          -project "asa-sample-project/asaproj.json" \
+          -outputPath "Output"
