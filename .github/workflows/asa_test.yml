@@ -21,5 +21,4 @@ jobs:
 
     - name: test list files in bin directory
       run: |
-        cd /opt/hostedtoolcache/node/22.15.0/x64/lib/node_modules/azure-streamanalytics-cicd/bin
-        ls -ltr
+        npm list -g azure-streamanalytics-cicd --depth=0
