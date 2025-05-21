@@ -17,15 +17,6 @@ jobs:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Ensure winget is available
-      shell: pwsh
-      run: |
-        if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-          Write-Host "winget not available. Attempting to install App Installer from Microsoft Store..."
-          # You can't install from the Store in GitHub-hosted runners, but you could provide a fallback or exit
-          exit 1
-        }
-
     - name: Install winget-create
       shell: pwsh
       run: |
