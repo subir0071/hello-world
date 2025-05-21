@@ -22,5 +22,11 @@ jobs:
       run: |
         choco install wingetcreate -y
 
+    - name: Check wingetcreate install
+      shell: pwsh
+      run: |
+        choco list --local-only
+        Get-ChildItem "C:\ProgramData\chocolatey\lib\wingetcreate" -Recurse
+
     - name: Verify winget-create installation
       run: wingetcreate --version --verbose-logs
