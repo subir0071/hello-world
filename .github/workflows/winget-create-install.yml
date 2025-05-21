@@ -23,4 +23,4 @@ jobs:
         choco install wingetcreate -y
 
     - name: Verify winget-create installation
-      run: wingetcreate --version
+      run: wingetcreate --version --verbose-logs
