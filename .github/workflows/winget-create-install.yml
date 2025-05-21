@@ -18,14 +18,14 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install winget-create
-      shell: pwsh
+      shell: powershell
       run: |
         choco install wingetcreate -y
 
     - name: Check wingetcreate install
-      shell: pwsh
+      shell: powershell
       run: |
-        choco list --local-only
+        choco list 
         Get-ChildItem "C:\ProgramData\chocolatey\lib\wingetcreate" -Recurse
 
     - name: Verify winget-create installation
