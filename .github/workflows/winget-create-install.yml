@@ -20,7 +20,7 @@ jobs:
     - name: Install winget-create
       shell: pwsh
       run: |
-        choco install wingetcreate
+        choco install wingetcreate -y
 
     - name: Verify winget-create installation
       run: wingetcreate --version
