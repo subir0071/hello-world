@@ -30,7 +30,7 @@ jobs:
       - name: list files in RUNNER_TEMP
         run: |
           cd "$env:RUNNER_TEMP"
-          ls -ltr
+          dir
 
       - name: Verify wingetcreate version
         run: |
