@@ -19,19 +19,11 @@ jobs:
         with:
           dotnet-version: '6.x'
       
-      - name: Get latest wingetcreate.exe release info
-        id: get_release
-        run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-create/releases/latest"
-          $asset = $response.assets | Where-Object { $_.name -eq "wingetcreate.exe" }
-          echo "WINGETCREATE_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append
+    
 
       - name: Download wingetcreate.exe
         run: |
-          $exePath = "$env:RUNNER_TEMP\wingetcreate.exe"
-          Invoke-WebRequest -Uri "$env:WINGETCREATE_URL" -OutFile $exePath
-          echo "$env:RUNNER_TEMP" | Out-File -Append $env:GITHUB_PATH
-
+          iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
       - name: list files in RUNNER_TEMP
         run: |
           cd "$env:RUNNER_TEMP"
