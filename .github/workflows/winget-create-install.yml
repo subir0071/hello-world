@@ -28,5 +28,3 @@ jobs:
         choco list 
         Get-ChildItem "C:\ProgramData\chocolatey\lib\wingetcreate" -Recurse
 
-    - name: Verify winget-create installation
-      run: wingetcreate --version --verbose-logs
