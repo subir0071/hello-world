@@ -1,4 +1,4 @@
-name: Install wingetcreate
+name: Install wingetcreate from GitHub Releases
 
 on:
   workflow_dispatch:
@@ -9,26 +9,24 @@ jobs:
     strategy:
       matrix:
         os: [windows-2025, windows-2022, windows-2019]
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get latest wingetcreate release info
+      - name: Get latest wingetcreate.exe release info
         id: get_release
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-create/releases/latest"
-          $asset = $response.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -First 1
-          echo "DOWNLOAD_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "FILENAME=$($asset.name)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $asset = $response.assets | Where-Object { $_.name -eq "wingetcreate.exe" }
+          echo "WINGETCREATE_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: Download wingetcreate
+      - name: Download wingetcreate.exe
         run: |
-          Invoke-WebRequest -Uri "$env:DOWNLOAD_URL" -OutFile "$env:FILENAME"
+          $exePath = "$env:RUNNER_TEMP\wingetcreate.exe"
+          Invoke-WebRequest -Uri "$env:WINGETCREATE_URL" -OutFile $exePath
+          echo "$env:RUNNER_TEMP" | Out-File -Append $env:GITHUB_PATH
 
-      - name: Install wingetcreate
+      - name: Verify wingetcreate version
         run: |
-          Add-AppxPackage -Path "$env:FILENAME"
-
-      - name: Verify installation
-        run: |
-          wingetcreate --version
+          wingetcreate.exe --version
