@@ -41,4 +41,4 @@ jobs:
 
       - name: Verify wingetcreate version
         run: |
-          wingetcreate.exe help
+           & "$env:RUNNER_TEMP\wingetcreate.exe" --help
