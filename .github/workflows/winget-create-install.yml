@@ -32,6 +32,13 @@ jobs:
           cd "$env:RUNNER_TEMP"
           dir
 
+      - name: Check if wingetcreate.exe exists
+        run: |
+          if (-Not (Test-Path "$env:RUNNER_TEMP\wingetcreate.exe")) {
+            Write-Error "wingetcreate.exe not found!"
+            exit 1
+          }
+
       - name: Verify wingetcreate version
         run: |
           wingetcreate.exe --version
