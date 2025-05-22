@@ -1,34 +1,34 @@
-name: Install winget-create on all Windows runners
+name: Install wingetcreate
 
 on:
   workflow_dispatch:
 
 jobs:
-  install-winget-create:
+  install-wingetcreate:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
-          - windows-2019
-          - windows-2022
-          - windows-2025
-
+        os: [windows-2025, windows-2022, windows-2019]
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
-    - name: Install winget-create
-      shell: powershell
-      run: |
-        choco install wingetcreate -y
+      - name: Get latest wingetcreate release info
+        id: get_release
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/microsoft/winget-create/releases/latest"
+          $asset = $response.assets | Where-Object { $_.name -like "*.msixbundle" } | Select-Object -First 1
+          echo "DOWNLOAD_URL=$($asset.browser_download_url)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "FILENAME=$($asset.name)" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-    - name: Check wingetcreate install
-      shell: powershell
-      run: |
-        choco list 
-        Get-ChildItem "C:\ProgramData\chocolatey\lib\wingetcreate" -Recurse
+      - name: Download wingetcreate
+        run: |
+          Invoke-WebRequest -Uri "$env:DOWNLOAD_URL" -OutFile "$env:FILENAME"
 
-    - name: Verify winget-create
-      shell: powershell
-      run: wingetcreate.exe -?
+      - name: Install wingetcreate
+        run: |
+          Add-AppxPackage -Path "$env:FILENAME"
 
+      - name: Verify installation
+        run: |
+          wingetcreate --version
