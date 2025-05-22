@@ -10,14 +10,14 @@ jobs:
       matrix:
         os: [windows-2022, windows-2019]
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # steps:
+    #   - name: Checkout repository
+    #     uses: actions/checkout@v4
 
-      - name: install dotnet 6.0.13
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '6.x'
+    #   - name: install dotnet 6.0.13
+    #     uses: actions/setup-dotnet@v4
+    #     with:
+    #       dotnet-version: '6.x'
       
     
 
@@ -25,6 +25,8 @@ jobs:
         run: |
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
 
+          
+
       - name: Verify wingetcreate version
         run: |
-           wingetcreate.exe --help
+          .\wingetcreate.exe --help
