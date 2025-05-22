@@ -24,18 +24,7 @@ jobs:
       - name: Download wingetcreate.exe
         run: |
           iwr https://aka.ms/wingetcreate/latest -OutFile wingetcreate.exe
-      - name: list files in RUNNER_TEMP
-        run: |
-          cd "$env:RUNNER_TEMP"
-          dir
-
-      - name: Check if wingetcreate.exe exists
-        run: |
-          if (-Not (Test-Path "$env:RUNNER_TEMP\wingetcreate.exe")) {
-            Write-Error "wingetcreate.exe not found!"
-            exit 1
-          }
 
       - name: Verify wingetcreate version
         run: |
-           & "$env:RUNNER_TEMP\wingetcreate.exe" --help
+           wingetcreate.exe --help
