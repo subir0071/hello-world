@@ -1,4 +1,4 @@
-name: test-ssh-windows-2025
+name: test ssh windows 2025
 
 on:
   push:
