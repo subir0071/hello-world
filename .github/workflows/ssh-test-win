@@ -1,0 +1,17 @@
+name: test-ssh-windows-2025
+
+on:
+  push:
+
+jobs:
+  test:
+    timeout-minutes: 10
+    runs-on: goto-windows-x64-4core
+    steps:
+      - name: enable inheritance
+        shell: pwsh
+        run: |
+          icacls C:\ /inheritance:e /c /q 2>&1
+      - uses: actions/checkout@v4
+        with:
+          ssh-key: "${{ secrets.TMP_SSH_KEY }}"
