@@ -6,7 +6,7 @@ on:
 jobs:
   test:
     timeout-minutes: 10
-    runs-on: goto-windows-x64-4core
+    runs-on: windows-2025
     steps:
       - name: enable inheritance
         shell: pwsh
