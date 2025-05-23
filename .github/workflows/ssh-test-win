@@ -1,7 +1,7 @@
 name: test ssh windows 2025
 
 on:
-  push:
+  workflow_dispatch:
 
 jobs:
   test:
