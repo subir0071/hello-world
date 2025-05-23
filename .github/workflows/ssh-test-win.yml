@@ -8,10 +8,10 @@ jobs:
     timeout-minutes: 10
     runs-on: windows-2025
     steps:
-      # - name: enable inheritance
-      #   shell: pwsh
-      #   run: |
-      #     icacls C:\ /inheritance:e /c /q 2>&1
+      - name: enable inheritance
+        shell: pwsh
+        run: |
+          icacls C:\ /inheritance:e /c /q 2>&1
       - uses: actions/checkout@v4
         with:
           ssh-key: "${{ secrets.TMP_SSH_KEY }}"
