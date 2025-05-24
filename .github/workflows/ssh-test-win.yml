@@ -5,9 +5,8 @@ on:
 
 jobs:
   test:
-    #timeout-minutes: 10
     runs-on: windows-2025
-    # steps:
+    steps:
     #   - name: enable inheritance
     #     shell: pwsh
     #     run: |
