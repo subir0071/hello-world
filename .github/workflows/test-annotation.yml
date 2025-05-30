@@ -1,0 +1,13 @@
+name: test-annotation
+on:
+  workflow_dispatch:
+
+jobs:
+  checking_echo:
+    runs-on: windows-2019
+
+    steps:
+      - name: test echo
+        shell: pwsh
+        run: |
+          echo "hello world!"
