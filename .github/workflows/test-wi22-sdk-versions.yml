@@ -1,0 +1,22 @@
+name: List Installed Windows SDKs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-windows-sdks:
+    runs-on: windows-2022
+    steps:
+      - name: List Windows SDK versions
+        shell: pwsh
+        run: |
+          $sdkBasePath = "C:\Program Files (x86)\Windows Kits\10\Lib"
+
+          if (Test-Path $sdkBasePath) {
+            Write-Host "📦 Windows SDKs found in: $sdkBasePath"
+            Get-ChildItem -Path $sdkBasePath -Directory | ForEach-Object {
+              Write-Host "✅ Found Windows SDK version: $($_.Name)"
+            }
+          } else {
+            Write-Error "❌ Windows SDK base path not found: $sdkBasePath"
+          }
