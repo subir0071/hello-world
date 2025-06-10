@@ -1,4 +1,4 @@
-name: List Installed Windows SDKs
+name: windows sdk
 
 on:
   workflow_dispatch:
