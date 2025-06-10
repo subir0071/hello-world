@@ -1,8 +1,6 @@
-name: windows sdk
-
+name: A windows sdk
 on:
   workflow_dispatch:
-
 jobs:
   list-windows-sdks:
     runs-on: windows-2022
