@@ -18,3 +18,18 @@ jobs:
           } else {
             Write-Error "❌ Windows SDK base path not found: $sdkBasePath"
           }
+
+      - name: Check SDK MSI Build Version
+        shell: pwsh
+        run: |
+          $sdk = Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*" |
+            Where-Object { $_.DisplayName -like "*Windows Software Development Kit*" } |
+            Sort-Object DisplayVersion -Descending |
+            Select-Object -First 1
+
+          if ($sdk.DisplayVersion -eq "10.1.26100.3916") {
+            Write-Host "✅ Required SDK version 10.1.26100.3916 is installed."
+          } else {
+            Write-Error "❌ Required SDK version not found. Found version: $($sdk.DisplayVersion)"
+            exit 1
+          }
