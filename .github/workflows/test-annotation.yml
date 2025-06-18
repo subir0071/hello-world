@@ -10,4 +10,4 @@ jobs:
       - name: test echo
         shell: pwsh
         run: |
-          echo "Github Workspace value: $GITHUB_WORKSPACE"
+          echo "Github Workspace value: %GITHUB_WORKSPACE%"
