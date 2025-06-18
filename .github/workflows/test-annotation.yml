@@ -1,13 +1,16 @@
-name: Workspace Variable Value
+name: Print GITHUB_WORKSPACE on Windows
+
 on:
   workflow_dispatch:
 
 jobs:
-  checking_echo:
+  print-workspace:
     runs-on: windows-2022
 
     steps:
-      - name: test echo
-        shell: pwsh
-        run: |
-          echo "Github Workspace value: %GITHUB_WORKSPACE%"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Print GITHUB_WORKSPACE
+        run: echo "GITHUB_WORKSPACE=%GITHUB_WORKSPACE%"
+        shell: cmd
