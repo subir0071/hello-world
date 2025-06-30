@@ -4,21 +4,11 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: windows-2025  # Windows environment
+    runs-on: windows-2019  # Windows environment
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: '6.0'
-
-      - name: Build project
-        run: |
-          dotnet build
-          
-      - name: Run tests
-        run: |
-          dotnet test
+      - name: test simple command
+        run: echo "Windows 2019 runner still working"
