@@ -1,0 +1,17 @@
+name: Test jq Version on Ubuntu 24.04
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-jq-version:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check jq version
+        run: |
+          echo "jq version:"
+          jq --version
