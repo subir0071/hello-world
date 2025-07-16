@@ -1,4 +1,4 @@
-name: Test pwritev2 behavior - corected
+name: Test pwritev2 behavior - corrected
 
 on:
   workflow_dispatch:
