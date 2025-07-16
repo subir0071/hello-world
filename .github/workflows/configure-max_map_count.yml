@@ -15,16 +15,16 @@ jobs:
       run: |
         echo "Current vm.max_map_count value:"
         cat /proc/sys/vm/max_map_count
-        echo "Configuring vm.max_map_count to 200000..."
-        sudo sysctl -w vm.max_map_count=200000
+        echo "Configuring vm.max_map_count to 2000000..."
+        sudo sysctl -w vm.max_map_count=2000000
         echo "New vm.max_map_count value:"
         cat /proc/sys/vm/max_map_count
     
     - name: Verify configuration
       run: |
         current_value=$(cat /proc/sys/vm/max_map_count)
-        if [ "$current_value" -eq "200000" ]; then
-          echo "vm.max_map_count successfully configured to 200000"
+        if [ "$current_value" -eq "2000000" ]; then
+          echo "vm.max_map_count successfully configured to 2000000"
         else
           echo "Failed to configure vm.max_map_count. Current value: $current_value"
           exit 1
