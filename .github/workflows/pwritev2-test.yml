@@ -1,11 +1,11 @@
-name: pwritev2 test
+name: pwritev2 test RWF_NOAPPEND ignored
 
 on:
   workflow_dispatch:
 
 jobs:
   test-pwritev2:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
