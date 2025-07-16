@@ -20,6 +20,10 @@ jobs:
           #include <sys/uio.h>
           #include <unistd.h>
 
+          #ifndef RWF_NOAPPEND
+          #define RWF_NOAPPEND 0x00000010
+          #endif
+
           int main() {
               const char *filename = "testfile.txt";
 
