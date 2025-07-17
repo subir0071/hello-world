@@ -1,0 +1,366 @@
+name: ClangCl with OpenMP on Windows 2022
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-clangcl-openmp:
+    runs-on: windows-2022
+    
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        architecture: [x64, x86]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup MSVC and ClangCl
+      uses: microsoft/setup-msbuild@v2
+      with:
+        msbuild-architecture: ${{ matrix.architecture }}
+    
+    - name: Verify ClangCl installation
+      shell: powershell
+      run: |
+        Write-Host "Verifying ClangCl installation..."
+        Write-Host "LLVM is pre-installed on windows-2022 runners"
+        
+        # Verify clang-cl is available
+        clang-cl --version
+        clang --version
+        
+        # Check LLVM installation path
+        Write-Host "LLVM Path:"
+        Get-Command clang-cl | Select-Object Source
+        Get-Command clang | Select-Object Source
+        
+        # Check OpenMP support
+        Write-Host "Checking OpenMP support..."
+        clang-cl -Xclang -fopenmp -help | Select-String "openmp" | Select-Object -First 5
+    
+    - name: Setup Visual Studio environment
+      shell: powershell
+      run: |
+        Write-Host "Setting up Visual Studio environment for ${{ matrix.architecture }}..."
+        
+        if ("${{ matrix.architecture }}" -eq "x64") {
+          $vcvarsall = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        } else {
+          $vcvarsall = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+        }
+        
+        Write-Host "Using vcvarsall: $vcvarsall"
+        cmd /c "`"$vcvarsall`" && set" | ForEach-Object {
+          if ($_ -match "^(.*?)=(.*)$") {
+            Set-Content "env:\$($matches[1])" $matches[2]
+          }
+        }
+        
+        Write-Host "Environment variables set successfully"
+    
+    - name: Install OpenMP runtime
+      shell: powershell
+      run: |
+        Write-Host "Setting up OpenMP runtime..."
+        
+        # Check if OpenMP libraries are already available
+        Write-Host "Checking for existing OpenMP support..."
+        
+        # For ClangCl on Windows, we typically need libomp.dll
+        # Check common locations where LLVM might have installed OpenMP
+        $llvmPath = (Get-Command clang-cl).Source | Split-Path -Parent
+        $llvmRoot = Split-Path $llvmPath -Parent
+        
+        Write-Host "LLVM installation root: $llvmRoot"
+        
+        # Look for OpenMP libraries
+        if (Test-Path "$llvmRoot\lib\libomp.lib") {
+          Write-Host "Found LLVM OpenMP library at: $llvmRoot\lib\libomp.lib"
+          echo "OPENMP_LIB_PATH=$llvmRoot\lib" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        } else {
+          Write-Host "LLVM OpenMP library not found, will try vcpkg..."
+          
+          # Use vcpkg as fallback to install OpenMP
+          if (-not (Test-Path "C:\vcpkg")) {
+            Write-Host "Installing vcpkg..."
+            git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+            C:\vcpkg\bootstrap-vcpkg.bat
+            C:\vcpkg\vcpkg.exe integrate install
+          }
+          
+          Write-Host "Installing OpenMP via vcpkg..."
+          C:\vcpkg\vcpkg.exe install openmp:${{ matrix.architecture }}-windows
+          echo "OPENMP_ROOT=C:\vcpkg\installed\${{ matrix.architecture }}-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }
+    
+    - name: Create sample OpenMP program
+      shell: powershell
+      run: |
+        Write-Host "Creating sample OpenMP program..."
+        
+        $sampleCode = @'
+        #include <omp.h>
+        #include <stdio.h>
+        #include <stdlib.h>
+
+        int main() {
+            printf("Testing OpenMP with ClangCl\n");
+            printf("Number of processors: %d\n", omp_get_num_procs());
+            printf("Max threads: %d\n", omp_get_max_threads());
+            
+            #pragma omp parallel
+            {
+                int thread_id = omp_get_thread_num();
+                int num_threads = omp_get_num_threads();
+                
+                #pragma omp critical
+                {
+                    printf("Hello from thread %d of %d\n", thread_id, num_threads);
+                }
+            }
+            
+            // Test parallel for loop
+            printf("\nTesting parallel for loop:\n");
+            int n = 10;
+            int sum = 0;
+            
+            #pragma omp parallel for reduction(+:sum)
+            for (int i = 0; i < n; i++) {
+                sum += i;
+                printf("Thread %d processing i=%d\n", omp_get_thread_num(), i);
+            }
+            
+            printf("Sum: %d\n", sum);
+            return 0;
+        }
+        '@
+        
+        New-Item -ItemType Directory -Force -Path "src"
+        $sampleCode | Out-File -FilePath "src\openmp_test.c" -Encoding utf8
+        
+        Write-Host "Sample program created: src\openmp_test.c"
+    
+    - name: Compile with ClangCl and OpenMP
+      shell: powershell
+      run: |
+        Write-Host "Compiling with ClangCl and OpenMP..."
+        
+        # Create output directory
+        New-Item -ItemType Directory -Force -Path "build\${{ matrix.configuration }}\${{ matrix.architecture }}"
+        
+        # Set compiler flags based on configuration
+        if ("${{ matrix.configuration }}" -eq "Debug") {
+          $configFlags = "/Od /Zi /MDd"
+        } else {
+          $configFlags = "/O2 /DNDEBUG /MD"
+        }
+        
+        # Set architecture flags
+        if ("${{ matrix.architecture }}" -eq "x64") {
+          $archFlags = "/favor:AMD64"
+        } else {
+          $archFlags = "/favor:INTEL64"
+        }
+        
+        # Compile with ClangCl
+        $compileCmd = "clang-cl /TC $configFlags $archFlags /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_test.exe src\openmp_test.c"
+        
+        Write-Host "Compile command: $compileCmd"
+        Invoke-Expression $compileCmd
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "Compilation successful!"
+        } else {
+          Write-Host "Compilation failed with exit code: $LASTEXITCODE"
+          exit 1
+        }
+    
+    - name: Run OpenMP test
+      shell: powershell
+      run: |
+        Write-Host "Running OpenMP test..."
+        
+        $exePath = "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_test.exe"
+        
+        if (Test-Path $exePath) {
+          Write-Host "Executable found: $exePath"
+          
+          # Set OpenMP thread count
+          $env:OMP_NUM_THREADS = "4"
+          
+          Write-Host "Running with OMP_NUM_THREADS=$env:OMP_NUM_THREADS"
+          & $exePath
+          
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "OpenMP test completed successfully!"
+          } else {
+            Write-Host "OpenMP test failed with exit code: $LASTEXITCODE"
+            exit 1
+          }
+        } else {
+          Write-Host "Executable not found: $exePath"
+          exit 1
+        }
+    
+    - name: Test different OpenMP features
+      shell: powershell
+      run: |
+        Write-Host "Testing additional OpenMP features..."
+        
+        $advancedCode = @'
+        #include <omp.h>
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <time.h>
+
+        void test_sections() {
+            printf("\n=== Testing OpenMP Sections ===\n");
+            #pragma omp parallel sections
+            {
+                #pragma omp section
+                {
+                    printf("Section 1 executed by thread %d\n", omp_get_thread_num());
+                }
+                #pragma omp section
+                {
+                    printf("Section 2 executed by thread %d\n", omp_get_thread_num());
+                }
+                #pragma omp section
+                {
+                    printf("Section 3 executed by thread %d\n", omp_get_thread_num());
+                }
+            }
+        }
+
+        void test_critical_atomic() {
+            printf("\n=== Testing Critical and Atomic ===\n");
+            int counter = 0;
+            int atomic_counter = 0;
+            
+            #pragma omp parallel for
+            for (int i = 0; i < 1000; i++) {
+                #pragma omp critical
+                {
+                    counter++;
+                }
+                
+                #pragma omp atomic
+                atomic_counter++;
+            }
+            
+            printf("Critical counter: %d\n", counter);
+            printf("Atomic counter: %d\n", atomic_counter);
+        }
+
+        int main() {
+            printf("Advanced OpenMP Test with ClangCl\n");
+            printf("OpenMP version: %d\n", _OPENMP);
+            
+            test_sections();
+            test_critical_atomic();
+            
+            return 0;
+        }
+        '@
+        
+        $advancedCode | Out-File -FilePath "src\openmp_advanced.c" -Encoding utf8
+        
+        # Compile advanced test
+        $compileCmd = "clang-cl /TC /O2 /MD /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_advanced.exe src\openmp_advanced.c"
+        Write-Host "Compiling advanced test: $compileCmd"
+        Invoke-Expression $compileCmd
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "Advanced test compilation successful!"
+          
+          # Run advanced test
+          $advancedExe = "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_advanced.exe"
+          & $advancedExe
+        } else {
+          Write-Host "Advanced test compilation failed"
+        }
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: openmp-binaries-${{ matrix.configuration }}-${{ matrix.architecture }}
+        path: |
+          build/${{ matrix.configuration }}/${{ matrix.architecture }}/*.exe
+          src/*.c
+        retention-days: 7
+    
+    - name: Performance test
+      shell: powershell
+      run: |
+        Write-Host "Running performance comparison..."
+        
+        $perfCode = @'
+        #include <omp.h>
+        #include <stdio.h>
+        #include <stdlib.h>
+        #include <time.h>
+
+        #define ARRAY_SIZE 10000000
+
+        void serial_sum(int* arr, int size, long long* result) {
+            *result = 0;
+            for (int i = 0; i < size; i++) {
+                *result += arr[i];
+            }
+        }
+
+        void parallel_sum(int* arr, int size, long long* result) {
+            *result = 0;
+            #pragma omp parallel for reduction(+:*result)
+            for (int i = 0; i < size; i++) {
+                *result += arr[i];
+            }
+        }
+
+        int main() {
+            printf("Performance Test: Serial vs Parallel\n");
+            
+            int* arr = (int*)malloc(ARRAY_SIZE * sizeof(int));
+            for (int i = 0; i < ARRAY_SIZE; i++) {
+                arr[i] = i % 100;
+            }
+            
+            long long serial_result, parallel_result;
+            double start_time, end_time;
+            
+            // Serial version
+            start_time = omp_get_wtime();
+            serial_sum(arr, ARRAY_SIZE, &serial_result);
+            end_time = omp_get_wtime();
+            printf("Serial time: %.4f seconds, Result: %lld\n", end_time - start_time, serial_result);
+            
+            // Parallel version
+            start_time = omp_get_wtime();
+            parallel_sum(arr, ARRAY_SIZE, &parallel_result);
+            end_time = omp_get_wtime();
+            printf("Parallel time: %.4f seconds, Result: %lld\n", end_time - start_time, parallel_result);
+            
+            printf("Results match: %s\n", (serial_result == parallel_result) ? "Yes" : "No");
+            
+            free(arr);
+            return 0;
+        }
+        '@
+        
+        $perfCode | Out-File -FilePath "src\openmp_perf.c" -Encoding utf8
+        
+        # Compile performance test
+        clang-cl /TC /O2 /MD /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_perf.exe src\openmp_perf.c
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "Performance test compilation successful!"
+          
+          # Run with different thread counts
+          @(1, 2, 4, 8) | ForEach-Object {
+            $env:OMP_NUM_THREADS = $_
+            Write-Host "`nTesting with $_ threads:"
+            & "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_perf.exe"
+          }
+        }
