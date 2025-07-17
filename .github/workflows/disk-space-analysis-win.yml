@@ -1,0 +1,50 @@
+name: Disk Space Analysis - Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  disk-space-analysis:
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Disk Space Analysis
+      shell: pwsh
+      run: |
+        Write-Host "=== Disk Space Analysis for ${{ matrix.os }} ===" -ForegroundColor Green
+        Write-Host ""
+        
+        $drives = Get-PSDrive -PSProvider FileSystem
+        $driveData = @()
+        
+        foreach ($drive in $drives) {
+            try {
+                $totalGB = [math]::Round(($drive.Used + $drive.Free) / 1GB, 1)
+                $usedGB = [math]::Round($drive.Used / 1GB, 1)
+                $freeGB = [math]::Round($drive.Free / 1GB, 1)
+                $usedPercent = [math]::Round(($drive.Used / ($drive.Used + $drive.Free)) * 100, 1)
+                
+                $driveData += [PSCustomObject]@{
+                    Drive = "$($drive.Name):"
+                    'Total (GB)' = $totalGB
+                    'Used (GB)' = $usedGB
+                    'Free (GB)' = $freeGB
+                    'Used %' = "$usedPercent%"
+                }
+            }
+            catch {
+                Write-Host "Unable to read drive $($drive.Name)" -ForegroundColor Yellow
+            }
+        }
+        
+        $driveData | Format-Table -AutoSize
+        
+        $totalSpace = ($driveData | Measure-Object 'Total (GB)' -Sum).Sum
+        $totalUsed = ($driveData | Measure-Object 'Used (GB)' -Sum).Sum
+        $totalFree = ($driveData | Measure-Object 'Free (GB)' -Sum).Sum
+        
+        Write-Host "Total System: $totalSpace GB | Used: $totalUsed GB | Free: $totalFree GB" -ForegroundColor Cyan
