@@ -1,16 +1,15 @@
 name: ClangCl with OpenMP on Windows 2022
 
 on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build-clangcl-openmp:
     runs-on: windows-2022
-    
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
-        architecture: [x64, x86]
     
     steps:
     - name: Checkout repository
@@ -19,7 +18,7 @@ jobs:
     - name: Setup MSVC and ClangCl
       uses: microsoft/setup-msbuild@v2
       with:
-        msbuild-architecture: ${{ matrix.architecture }}
+        msbuild-architecture: x64
     
     - name: Verify ClangCl installation
       shell: powershell
@@ -43,13 +42,9 @@ jobs:
     - name: Setup Visual Studio environment
       shell: powershell
       run: |
-        Write-Host "Setting up Visual Studio environment for ${{ matrix.architecture }}..."
+        Write-Host "Setting up Visual Studio environment for x64..."
         
-        if ("${{ matrix.architecture }}" -eq "x64") {
-          $vcvarsall = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-        } else {
-          $vcvarsall = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
-        }
+        $vcvarsall = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         
         Write-Host "Using vcvarsall: $vcvarsall"
         cmd /c "`"$vcvarsall`" && set" | ForEach-Object {
@@ -91,8 +86,8 @@ jobs:
           }
           
           Write-Host "Installing OpenMP via vcpkg..."
-          C:\vcpkg\vcpkg.exe install openmp:${{ matrix.architecture }}-windows
-          echo "OPENMP_ROOT=C:\vcpkg\installed\${{ matrix.architecture }}-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          C:\vcpkg\vcpkg.exe install openmp:x64-windows
+          echo "OPENMP_ROOT=C:\vcpkg\installed\x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }
     
     - name: Create sample OpenMP program
@@ -148,24 +143,16 @@ jobs:
         Write-Host "Compiling with ClangCl and OpenMP..."
         
         # Create output directory
-        New-Item -ItemType Directory -Force -Path "build\${{ matrix.configuration }}\${{ matrix.architecture }}"
+        New-Item -ItemType Directory -Force -Path "build\Release\x64"
         
-        # Set compiler flags based on configuration
-        if ("${{ matrix.configuration }}" -eq "Debug") {
-          $configFlags = "/Od /Zi /MDd"
-        } else {
-          $configFlags = "/O2 /DNDEBUG /MD"
-        }
+        # Set compiler flags for Release configuration
+        $configFlags = "/O2 /DNDEBUG /MD"
         
-        # Set architecture flags
-        if ("${{ matrix.architecture }}" -eq "x64") {
-          $archFlags = "/favor:AMD64"
-        } else {
-          $archFlags = "/favor:INTEL64"
-        }
+        # Set architecture flags for x64
+        $archFlags = "/favor:AMD64"
         
         # Compile with ClangCl
-        $compileCmd = "clang-cl /TC $configFlags $archFlags /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_test.exe src\openmp_test.c"
+        $compileCmd = "clang-cl /TC $configFlags $archFlags /openmp /Fe:build\Release\x64\openmp_test.exe src\openmp_test.c"
         
         Write-Host "Compile command: $compileCmd"
         Invoke-Expression $compileCmd
@@ -182,7 +169,7 @@ jobs:
       run: |
         Write-Host "Running OpenMP test..."
         
-        $exePath = "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_test.exe"
+        $exePath = "build\Release\x64\openmp_test.exe"
         
         if (Test-Path $exePath) {
           Write-Host "Executable found: $exePath"
@@ -268,7 +255,7 @@ jobs:
         $advancedCode | Out-File -FilePath "src\openmp_advanced.c" -Encoding utf8
         
         # Compile advanced test
-        $compileCmd = "clang-cl /TC /O2 /MD /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_advanced.exe src\openmp_advanced.c"
+        $compileCmd = "clang-cl /TC /O2 /MD /openmp /Fe:build\Release\x64\openmp_advanced.exe src\openmp_advanced.c"
         Write-Host "Compiling advanced test: $compileCmd"
         Invoke-Expression $compileCmd
         
@@ -276,7 +263,7 @@ jobs:
           Write-Host "Advanced test compilation successful!"
           
           # Run advanced test
-          $advancedExe = "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_advanced.exe"
+          $advancedExe = "build\Release\x64\openmp_advanced.exe"
           & $advancedExe
         } else {
           Write-Host "Advanced test compilation failed"
@@ -285,9 +272,9 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: openmp-binaries-${{ matrix.configuration }}-${{ matrix.architecture }}
+        name: openmp-binaries-release-x64
         path: |
-          build/${{ matrix.configuration }}/${{ matrix.architecture }}/*.exe
+          build/Release/x64/*.exe
           src/*.c
         retention-days: 7
     
@@ -352,7 +339,7 @@ jobs:
         $perfCode | Out-File -FilePath "src\openmp_perf.c" -Encoding utf8
         
         # Compile performance test
-        clang-cl /TC /O2 /MD /openmp /Fe:build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_perf.exe src\openmp_perf.c
+        clang-cl /TC /O2 /MD /openmp /Fe:build\Release\x64\openmp_perf.exe src\openmp_perf.c
         
         if ($LASTEXITCODE -eq 0) {
           Write-Host "Performance test compilation successful!"
@@ -361,6 +348,6 @@ jobs:
           @(1, 2, 4, 8) | ForEach-Object {
             $env:OMP_NUM_THREADS = $_
             Write-Host "`nTesting with $_ threads:"
-            & "build\${{ matrix.configuration }}\${{ matrix.architecture }}\openmp_perf.exe"
+            & "build\Release\x64\openmp_perf.exe"
           }
         }
