@@ -1,0 +1,37 @@
+name: Configure VM max_map_count Settings
+
+on:
+  workflow_dispatch:
+
+jobs:
+  configure-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure vm.max_map_count
+      run: |
+        echo "Current vm.max_map_count value:"
+        cat /proc/sys/vm/max_map_count
+        echo "Configuring vm.max_map_count to 200000..."
+        sudo sysctl -w vm.max_map_count=200000
+        echo "New vm.max_map_count value:"
+        cat /proc/sys/vm/max_map_count
+    
+    - name: Verify configuration
+      run: |
+        current_value=$(cat /proc/sys/vm/max_map_count)
+        if [ "$current_value" -eq "200000" ]; then
+          echo "vm.max_map_count successfully configured to 200000"
+        else
+          echo "Failed to configure vm.max_map_count. Current value: $current_value"
+          exit 1
+        fi
+    
+    # Add your other workflow steps here
+    - name: Your build steps
+      run: |
+        echo "Add your build, test, or deployment steps here"
+        echo "The vm.max_map_count is now configured and ready for use"
