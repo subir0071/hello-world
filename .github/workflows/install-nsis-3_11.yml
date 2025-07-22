@@ -1,0 +1,26 @@
+name: Install NSIS via Chocolatey
+
+on:
+  workflow_dispatch:
+
+jobs:
+  install-nsis:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install specific NSIS version (3.08) via Chocolatey
+        run: choco install nsis --version=3.08 -y
+
+      - name: Add NSIS to PATH
+        run: |
+          $nsisPath = "${env:ProgramFiles(x86)}\NSIS"
+          echo $nsisPath | Out-File -Append -FilePath $env:GITHUB_PATH
+
+      - name: Verify NSIS version
+        run: makensis /VERSION
