@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install specific NSIS version (3.08) via Chocolatey
-        run: choco install nsis --version=3.08 -y
+        run: choco install nsis -y
 
       - name: Add NSIS to PATH
         run: |
