@@ -32,19 +32,16 @@ jobs:
         wsl --list --verbose
       shell: powershell
 
-    - name: Install Ubuntu in WSL (if not present)
+    - name: Ensure Ubuntu in WSL
       run: |
-        Write-Host "Installing Ubuntu distribution..."
-        # Check if Ubuntu is already installed
-        $ubuntuInstalled = wsl --list --quiet | Where-Object { $_ -match "Ubuntu" }
-        if (-not $ubuntuInstalled) {
-            Write-Host "Installing Ubuntu..."
-            wsl --install -d Ubuntu --no-launch
-            Write-Host "Waiting for installation to complete..."
-            Start-Sleep -Seconds 30
-        } else {
-            Write-Host "Ubuntu is already installed"
-        }
+          Write-Host "Checking for Ubuntu distribution..."
+          $ubuntuInstalled = wsl --list --quiet | Where-Object { $_ -match "Ubuntu" }
+          if (-not $ubuntuInstalled) {
+             Write-Host "Ubuntu is not installed. Please use a runner with Ubuntu WSL preinstalled."
+            exit 1
+           } else {
+           Write-Host "Ubuntu is already installed"
+           }
       shell: powershell
 
     - name: Set up WSL Ubuntu and update packages
