@@ -1,0 +1,392 @@
+name: Ant and WSL Test on Windows
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  ant-wsl-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022, windows-2025]
+      fail-fast: false
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Display OS information
+      run: |
+        Write-Host "Running on: ${{ matrix.os }}"
+        Write-Host "OS Version: $(Get-CimInstance Win32_OperatingSystem | Select-Object Caption, Version)"
+        Write-Host "PowerShell Version: $($PSVersionTable.PSVersion)"
+      shell: powershell
+
+    - name: Check WSL status and version
+      run: |
+        Write-Host "Checking WSL status..."
+        wsl --status
+        Write-Host "WSL version:"
+        wsl --version
+        Write-Host "List installed distributions:"
+        wsl --list --verbose
+      shell: powershell
+
+    - name: Install Ubuntu in WSL (if not present)
+      run: |
+        Write-Host "Installing Ubuntu distribution..."
+        # Check if Ubuntu is already installed
+        $ubuntuInstalled = wsl --list --quiet | Where-Object { $_ -match "Ubuntu" }
+        if (-not $ubuntuInstalled) {
+            Write-Host "Installing Ubuntu..."
+            wsl --install -d Ubuntu --no-launch
+            Write-Host "Waiting for installation to complete..."
+            Start-Sleep -Seconds 30
+        } else {
+            Write-Host "Ubuntu is already installed"
+        }
+      shell: powershell
+
+    - name: Set up WSL Ubuntu and update packages
+      run: |
+        Write-Host "Setting up WSL Ubuntu..."
+        # Start Ubuntu if not running
+        wsl -d Ubuntu -e bash -c "echo 'WSL Ubuntu is now running'"
+        
+        # Update package lists
+        Write-Host "Updating package lists in WSL..."
+        wsl -d Ubuntu -e bash -c "sudo apt update"
+        
+        Write-Host "Upgrading existing packages..."
+        wsl -d Ubuntu -e bash -c "sudo apt upgrade -y"
+      shell: powershell
+
+    - name: Install development tools and Java in WSL
+      run: |
+        Write-Host "Installing basic development tools in WSL..."
+        wsl -d Ubuntu -e bash -c "sudo apt install -y curl wget git build-essential"
+        
+        Write-Host "Installing Java JDK in WSL (required for Ant)..."
+        wsl -d Ubuntu -e bash -c "sudo apt install -y default-jdk"
+        
+        Write-Host "Verifying Java installation in WSL..."
+        wsl -d Ubuntu -e bash -c "java -version && javac -version"
+      shell: powershell
+
+    - name: Install Apache Ant in WSL
+      run: |
+        Write-Host "=== Installing Apache Ant in WSL ==="
+        
+        Write-Host "Installing Ant via apt package manager..."
+        wsl -d Ubuntu -e bash -c "sudo apt install -y ant"
+        
+        Write-Host "Verifying Ant installation in WSL..."
+        wsl -d Ubuntu -e bash -c "ant -version"
+        
+        Write-Host "Checking Ant location and Java home in WSL..."
+        wsl -d Ubuntu -e bash -c "which ant && echo \$JAVA_HOME"
+        
+        Write-Host "Setting JAVA_HOME if not set..."
+        wsl -d Ubuntu -e bash -c "export JAVA_HOME=\$(readlink -f /usr/bin/java | sed 's:bin/java::') && echo \$JAVA_HOME"
+      shell: powershell
+
+    - name: Test basic WSL commands
+      run: |
+        Write-Host "=== Testing Basic WSL Commands ==="
+        
+        
+        Write-Host "Available disk space:"
+        wsl -d Ubuntu -e bash -c "df -h /"
+        
+        Write-Host "Memory information:"
+        wsl -d Ubuntu -e bash -c "free -h"
+        
+        Write-Host "Java version in WSL:"
+        wsl -d Ubuntu -e bash -c "java -version"
+        
+        Write-Host "Ant version in WSL:"
+        wsl -d Ubuntu -e bash -c "ant -version"
+        
+        Write-Host "Create and test a simple file:"
+        wsl -d Ubuntu -e bash -c "echo 'Hello from WSL on ${{ matrix.os }}' > test-file.txt && cat test-file.txt"
+        
+        Write-Host "Network connectivity test:"
+        wsl -d Ubuntu -e bash -c "curl -s -o /dev/null -w '%{http_code}' https://www.google.com"
+      shell: powershell
+
+    - name: Create simple Ant build file in WSL
+      run: |
+        Write-Host "=== Creating Ant build files in WSL ==="
+        
+        wsl -d Ubuntu -e bash -c @"
+          cd ~
+          cat > build.xml << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <project name="WSLAntTest" default="test" basedir=".">
+              <description>Simple Ant build file for WSL testing on ${{ matrix.os }}</description>
+              
+              <property name="src.dir" value="src"/>
+              <property name="build.dir" value="build"/>
+              
+              <target name="init">
+                  <mkdir dir="`${build.dir}"/>
+                  <echo message="Build directory created on ${{ matrix.os }}"/>
+              </target>
+              
+              <target name="compile" depends="init">
+                  <echo message="Compiling (simulated)..."/>
+                  <echo file="`${build.dir}/compiled.txt" message="Compilation completed on ${{ matrix.os }} in WSL"/>
+                  <echo message="Build file created: `${build.dir}/compiled.txt"/>
+              </target>
+              
+              <target name="test" depends="compile">
+                  <echo message="Running tests (simulated)..."/>
+                  <echo message="All tests passed on ${{ matrix.os }}"/>
+              </target>
+              
+              <target name="clean">
+                  <delete dir="`${build.dir}"/>
+                  <echo message="Build directory cleaned"/>
+              </target>
+              
+              <target name="info">
+                  <echo message="Java Home: `${java.home}"/>
+                  <echo message="Java Version: `${java.version}"/>
+                  <echo message="OS Name: `${os.name}"/>
+                  <echo message="User Name: `${user.name}"/>
+              </target>
+          </project>
+        EOF
+          
+          echo "build.xml created successfully in WSL home directory"
+          ls -la build.xml
+        "@
+      shell: powershell
+
+    - name: Run basic Ant build in WSL
+      run: |
+        Write-Host "=== Running Basic Ant Build in WSL ==="
+        
+        Write-Host "Running 'ant info' to display system information:"
+        wsl -d Ubuntu -e bash -c "cd ~ && ant info"
+        
+        Write-Host "Running full build process:"
+        wsl -d Ubuntu -e bash -c "cd ~ && ant"
+        
+        Write-Host "Checking build output:"
+        wsl -d Ubuntu -e bash -c "cd ~ && ls -la build/ && cat build/compiled.txt"
+        
+        Write-Host "Testing clean target:"
+        wsl -d Ubuntu -e bash -c "cd ~ && ant clean && ls -la"
+      shell: powershell
+
+    - name: Create and build Java project with Ant in WSL
+      run: |
+        Write-Host "=== Creating Java Project with Ant in WSL ==="
+        
+        wsl -d Ubuntu -e bash -c @"
+          cd ~
+          mkdir -p javaproject/src/com/example
+          
+          # Create a simple Java class
+          cat > javaproject/src/com/example/HelloWorld.java << 'EOF'
+          package com.example;
+          
+          public class HelloWorld {
+              public static void main(String[] args) {
+                  System.out.println("Hello World from WSL on ${{ matrix.os }}!");
+                  System.out.println("Java Version: " + System.getProperty("java.version"));
+                  System.out.println("OS: " + System.getProperty("os.name"));
+                  System.out.println("Current Directory: " + System.getProperty("user.dir"));
+              }
+          }
+        EOF
+          
+          # Create Ant build file for Java project
+          cat > javaproject/build.xml << 'EOF'
+          <?xml version="1.0"?>
+          <project name="JavaHelloWorld" default="run" basedir=".">
+              <description>Java Hello World project built with Ant in WSL</description>
+              
+              <property name="src.dir" value="src"/>
+              <property name="build.dir" value="build"/>
+              <property name="classes.dir" value="`${build.dir}/classes"/>
+              <property name="jar.dir" value="`${build.dir}/jar"/>
+              <property name="main.class" value="com.example.HelloWorld"/>
+              
+              <target name="init">
+                  <mkdir dir="`${classes.dir}"/>
+                  <mkdir dir="`${jar.dir}"/>
+              </target>
+              
+              <target name="compile" depends="init">
+                  <echo message="Compiling Java source files..."/>
+                  <javac srcdir="`${src.dir}" destdir="`${classes.dir}" includeantruntime="false">
+                      <classpath path="`${classes.dir}"/>
+                  </javac>
+                  <echo message="Compilation completed successfully"/>
+              </target>
+              
+              <target name="jar" depends="compile">
+                  <echo message="Creating JAR file..."/>
+                  <jar destfile="`${jar.dir}/HelloWorld.jar" basedir="`${classes.dir}">
+                      <manifest>
+                          <attribute name="Main-Class" value="`${main.class}"/>
+                      </manifest>
+                  </jar>
+                  <echo message="JAR file created: `${jar.dir}/HelloWorld.jar"/>
+              </target>
+              
+              <target name="run" depends="compile">
+                  <echo message="Running Java application..."/>
+                  <java classname="`${main.class}" classpath="`${classes.dir}"/>
+              </target>
+              
+              <target name="run-jar" depends="jar">
+                  <echo message="Running JAR file..."/>
+                  <java jar="`${jar.dir}/HelloWorld.jar" fork="true"/>
+              </target>
+              
+              <target name="clean">
+                  <delete dir="`${build.dir}"/>
+                  <echo message="Build directory cleaned"/>
+              </target>
+              
+              <target name="all" depends="clean,compile,jar,run-jar"/>
+          </project>
+        EOF
+          
+          echo "Java project structure created:"
+          find javaproject -type f -name "*.java" -o -name "*.xml" | sort
+        "@
+      shell: powershell
+
+    - name: Build and run Java project with Ant in WSL
+      run: |
+        Write-Host "=== Building and Running Java Project in WSL ==="
+        
+        Write-Host "Compiling Java project:"
+        wsl -d Ubuntu -e bash -c "cd ~/javaproject && ant compile"
+        
+        Write-Host "Running compiled Java application:"
+        wsl -d Ubuntu -e bash -c "cd ~/javaproject && ant run"
+        
+        Write-Host "Creating and running JAR file:"
+        wsl -d Ubuntu -e bash -c "cd ~/javaproject && ant jar && ant run-jar"
+        
+        Write-Host "Checking build artifacts:"
+        wsl -d Ubuntu -e bash -c "cd ~/javaproject && find build -type f | sort"
+      shell: powershell
+
+    - name: Advanced Ant features test in WSL
+      run: |
+        Write-Host "=== Testing Advanced Ant Features in WSL ==="
+        
+        # Test Ant with properties and conditions
+        wsl -d Ubuntu -e bash -c @"
+          cd ~
+          cat > advanced-build.xml << 'EOF'
+          <?xml version="1.0"?>
+          <project name="AdvancedAntTest" default="main" basedir=".">
+              <property name="app.name" value="WSL-Ant-Test"/>
+              <property name="app.version" value="1.0"/>
+              <property name="build.timestamp" value="`${DSTAMP}-`${TSTAMP}"/>
+              
+              <target name="properties">
+                  <tstamp/>
+                  <echo message="Application: `${app.name} v`${app.version}"/>
+                  <echo message="Build Time: `${build.timestamp}"/>
+                  <echo message="Ant Version: `${ant.version}"/>
+                  <echo message="Java Home: `${java.home}"/>
+              </target>
+              
+              <target name="conditional-test">
+                  <condition property="is.linux">
+                      <os family="unix"/>
+                  </condition>
+                  <echo message="Running on Linux: `${is.linux}"/>
+                  
+                  <available file="/etc/os-release" property="os.release.exists"/>
+                  <echo message="OS release file exists: `${os.release.exists}"/>
+              </target>
+              
+              <target name="file-operations">
+                  <mkdir dir="temp"/>
+                  <echo file="temp/sample.txt" message="Sample file created by Ant on ${{ matrix.os }}"/>
+                  <copy file="temp/sample.txt" tofile="temp/sample-copy.txt"/>
+                  <echo message="Files created and copied"/>
+                  <exec executable="ls">
+                      <arg value="-la"/>
+                      <arg value="temp"/>
+                  </exec>
+              </target>
+              
+              <target name="cleanup-temp">
+                  <delete dir="temp"/>
+                  <echo message="Temporary files cleaned up"/>
+              </target>
+              
+              <target name="main" depends="properties,conditional-test,file-operations,cleanup-temp">
+                  <echo message="Advanced Ant test completed successfully"/>
+              </target>
+          </project>
+        EOF
+          
+          echo "Running advanced Ant build..."
+          ant -f advanced-build.xml
+        "@
+      shell: powershell
+
+    - name: Performance and system comparison
+      run: |
+        Write-Host "=== Performance and System Comparison ==="
+        
+        Write-Host "Windows system info:"
+        systeminfo | Select-String "Total Physical Memory", "Available Physical Memory", "Processor"
+        
+        Write-Host "WSL system info:"
+        wsl -d Ubuntu -e bash -c "echo 'Memory:' && free -h && echo 'CPU:' && nproc && echo 'System:' && cat /proc/version"
+        
+        Write-Host "Ant build performance test in WSL:"
+        wsl -d Ubuntu -e bash -c "cd ~/javaproject && echo 'Running performance test...' && time ant clean compile jar"
+        
+        Write-Host "Checking installed packages in WSL:"
+        wsl -d Ubuntu -e bash -c "dpkg -l | grep -E '(ant|openjdk)'"
+      shell: powershell
+
+    - name: Export build artifacts from WSL to Windows
+      run: |
+        Write-Host "=== Exporting Build Artifacts from WSL ==="
+        
+        # Create artifacts directory on Windows
+        New-Item -ItemType Directory -Force -Path "artifacts"
+        
+        # Copy JAR file from WSL to Windows
+        Write-Host "Copying JAR file from WSL to Windows..."
+        wsl -d Ubuntu -e bash -c "cp ~/javaproject/build/jar/HelloWorld.jar /mnt/c/Users/runneradmin/artifacts/ 2>/dev/null || cp ~/javaproject/build/jar/HelloWorld.jar /mnt/$(($pwd -replace ':', '' -replace '\\', '/').ToLower())/artifacts/"
+        
+        # Copy build logs
+        Write-Host "Creating build summary..."
+        $buildSummary = @"
+        Build Summary for ${{ matrix.os }}
+        ================================
+        Date: $(Get-Date)
+        WSL Distribution: Ubuntu
+        Java Version: $(wsl -d Ubuntu -e bash -c "java -version 2>&1 | head -n 1")
+        Ant Version: $(wsl -d Ubuntu -e bash -c "ant -version")
+        
+        Build Status: SUCCESS
+        Artifacts Generated:
+        - HelloWorld.jar
+        
+        "@
+        
+        $buildSummary | Out-File -FilePath "artifacts/build-summary-${{ matrix.os }}.txt" -Encoding utf8
+        
+        Write-Host "Checking artifacts:"
+        Get-ChildItem -Path "artifacts" -Recurse
+      shell: powershell
