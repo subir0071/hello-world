@@ -129,60 +129,6 @@ jobs:
         git log --oneline -5
         git remote -v
 
-    - name: Test Docker registry access
-      run: |
-        echo "=== Docker operations ==="
-        docker --version
-        
-        echo "=== Testing Docker Hub access ==="
-        docker pull hello-world:latest
-        docker run --rm hello-world
-        
-        echo "=== Testing GitHub Container Registry ==="
-        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin || echo "GHCR login failed (expected without token)"
-
-    - name: Test cloud provider CLIs
-      run: |
-        echo "=== Installing cloud provider tools ==="
-        
-        # AWS CLI
-        echo "Installing AWS CLI..."
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip awscliv2.zip
-        sudo ./aws/install
-        aws --version
-        
-        # Azure CLI
-        echo "Installing Azure CLI..."
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-        az --version
-        
-        # Google Cloud CLI
-        echo "Installing Google Cloud CLI..."
-        curl https://sdk.cloud.google.com | bash
-        source ~/.bashrc
-        gcloud --version || echo "gcloud installation completed, but not in PATH yet"
-
-    - name: Test development tool downloads
-      run: |
-        echo "=== Testing development tool downloads ==="
-        
-        # Terraform
-        echo "Downloading Terraform..."
-        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
-        unzip terraform_1.5.0_linux_amd64.zip
-        ./terraform version
-        
-        # kubectl
-        echo "Downloading kubectl..."
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        ./kubectl version --client
-        
-        # Helm
-        echo "Downloading Helm..."
-        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-        helm version
 
     - name: Test API endpoints
       run: |
@@ -202,20 +148,6 @@ jobs:
         ping -c 3 google.com
         ping -c 3 github.com
 
-    - name: Test container operations
-      run: |
-        echo "=== Testing container operations ==="
-        
-        # Pull various container images
-        docker pull ubuntu:22.04
-        docker pull node:18-alpine
-        docker pull python:3.11-slim
-        
-        # Test container networking
-        echo "Testing container networking..."
-        docker run --rm ubuntu:22.04 apt update
-        docker run --rm node:18-alpine npm --version
-        docker run --rm python:3.11-slim pip --version
 
     - name: Network traffic analysis
       run: |
@@ -306,13 +238,6 @@ jobs:
         echo "Audit report generated: $REPORT_FILE"
         cat $REPORT_FILE
 
-    - name: Upload audit report
-      uses: actions/upload-artifact@v4
-      with:
-        name: egress-audit-report-${{ github.run_id }}
-        path: egress-audit-report-*.md
-        retention-days: 30
-      if: always()
 
     - name: Security scan results
       run: |
