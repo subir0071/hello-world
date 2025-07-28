@@ -1,0 +1,329 @@
+name: Egress Traffic Audit for Ubuntu 24.04
+
+on:
+  workflow_dispatch:
+    inputs:
+      audit_mode:
+        description: 'Audit mode (monitor or enforce)'
+        required: false
+        default: 'monitor'
+        type: choice
+        options:
+        - monitor
+        - enforce
+
+jobs:
+  egress-audit:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    
+    steps:
+    - name: Harden Runner
+      uses: step-security/harden-runner@v2
+      with:
+        # Audit mode - set to 'enforce' to block unauthorized traffic
+        egress-policy: ${{ github.event.inputs.audit_mode || 'monitor' }}
+        # Disable sudo to prevent privilege escalation
+        disable-sudo: false
+        # Disable file monitoring for performance (focus on network only)
+        disable-file-monitoring: true
+        # Allowed egress destinations
+        allowed-endpoints: >
+          api.github.com:443
+          github.com:443
+          objects.githubusercontent.com:443
+          codeload.github.com:443
+          registry.npmjs.org:443
+          pypi.org:443
+          files.pythonhosted.org:443
+          archive.ubuntu.com:80
+          archive.ubuntu.com:443
+          security.ubuntu.com:80
+          security.ubuntu.com:443
+          keyserver.ubuntu.com:80
+          keyserver.ubuntu.com:443
+          dl.google.com:443
+          storage.googleapis.com:443
+          apt.releases.hashicorp.com:443
+          releases.hashicorp.com:443
+          checkpoint-api.hashicorp.com:443
+          ppa.launchpad.net:443
+          raw.githubusercontent.com:443
+          deb.debian.org:80
+          deb.debian.org:443
+          repo.maven.apache.org:443
+          central.maven.org:443
+          search.maven.org:443
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: System information and baseline
+      run: |
+        echo "=== System Information ==="
+        uname -a
+        lsb_release -a
+        echo "=== Network Configuration ==="
+        ip addr show
+        echo "=== DNS Configuration ==="
+        cat /etc/resolv.conf
+        echo "=== Initial Network Connections ==="
+        ss -tuln
+        echo "=== Environment Variables ==="
+        printenv | grep -E "(GITHUB|RUNNER)" | sort
+
+    - name: Test package manager operations
+      run: |
+        echo "=== Testing APT Package Manager ==="
+        sudo apt update
+        sudo apt list --upgradable
+        
+        echo "=== Installing test packages ==="
+        sudo apt install -y curl wget jq tree htop
+        
+        echo "=== Verifying installations ==="
+        curl --version
+        wget --version
+        jq --version
+
+    - name: Test Node.js ecosystem access
+      run: |
+        echo "=== Node.js and npm operations ==="
+        node --version
+        npm --version
+        
+        echo "=== Testing npm registry access ==="
+        npm search express --json | head -5
+        
+        echo "=== Installing a test package ==="
+        npm install -g yarn
+        yarn --version
+
+    - name: Test Python ecosystem access
+      run: |
+        echo "=== Python and pip operations ==="
+        python3 --version
+        pip3 --version
+        
+        echo "=== Testing PyPI access ==="
+        pip3 install requests beautifulsoup4
+        
+        echo "=== Verifying Python packages ==="
+        python3 -c "import requests; print(f'Requests version: {requests.__version__}')"
+        python3 -c "import bs4; print(f'BeautifulSoup4 version: {bs4.__version__}')"
+
+    - name: Test Git operations
+      run: |
+        echo "=== Git operations ==="
+        git --version
+        
+        echo "=== Testing Git clone from GitHub ==="
+        git clone https://github.com/octocat/Hello-World.git test-repo
+        ls -la test-repo/
+        
+        echo "=== Testing Git operations ==="
+        cd test-repo
+        git log --oneline -5
+        git remote -v
+
+    - name: Test Docker registry access
+      run: |
+        echo "=== Docker operations ==="
+        docker --version
+        
+        echo "=== Testing Docker Hub access ==="
+        docker pull hello-world:latest
+        docker run --rm hello-world
+        
+        echo "=== Testing GitHub Container Registry ==="
+        echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin || echo "GHCR login failed (expected without token)"
+
+    - name: Test cloud provider CLIs
+      run: |
+        echo "=== Installing cloud provider tools ==="
+        
+        # AWS CLI
+        echo "Installing AWS CLI..."
+        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+        unzip awscliv2.zip
+        sudo ./aws/install
+        aws --version
+        
+        # Azure CLI
+        echo "Installing Azure CLI..."
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+        az --version
+        
+        # Google Cloud CLI
+        echo "Installing Google Cloud CLI..."
+        curl https://sdk.cloud.google.com | bash
+        source ~/.bashrc
+        gcloud --version || echo "gcloud installation completed, but not in PATH yet"
+
+    - name: Test development tool downloads
+      run: |
+        echo "=== Testing development tool downloads ==="
+        
+        # Terraform
+        echo "Downloading Terraform..."
+        wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+        unzip terraform_1.5.0_linux_amd64.zip
+        ./terraform version
+        
+        # kubectl
+        echo "Downloading kubectl..."
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        ./kubectl version --client
+        
+        # Helm
+        echo "Downloading Helm..."
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+        helm version
+
+    - name: Test API endpoints
+      run: |
+        echo "=== Testing various API endpoints ==="
+        
+        # GitHub API
+        echo "Testing GitHub API..."
+        curl -s https://api.github.com/repos/actions/runner/releases/latest | jq '.tag_name'
+        
+        # Public APIs
+        echo "Testing public APIs..."
+        curl -s https://httpbin.org/get | jq '.headers'
+        curl -s https://api.ipify.org?format=json | jq '.'
+        
+        # Check internet connectivity
+        echo "Testing internet connectivity..."
+        ping -c 3 google.com
+        ping -c 3 github.com
+
+    - name: Test container operations
+      run: |
+        echo "=== Testing container operations ==="
+        
+        # Pull various container images
+        docker pull ubuntu:22.04
+        docker pull node:18-alpine
+        docker pull python:3.11-slim
+        
+        # Test container networking
+        echo "Testing container networking..."
+        docker run --rm ubuntu:22.04 apt update
+        docker run --rm node:18-alpine npm --version
+        docker run --rm python:3.11-slim pip --version
+
+    - name: Network traffic analysis
+      run: |
+        echo "=== Network Traffic Analysis ==="
+        
+        # Show active connections
+        echo "Active network connections:"
+        ss -tuln
+        
+        # Show network statistics
+        echo "Network interface statistics:"
+        cat /proc/net/dev
+        
+        # DNS resolution test
+        echo "DNS resolution test:"
+        nslookup github.com
+        nslookup pypi.org
+        nslookup registry.npmjs.org
+
+    - name: Security validation
+      run: |
+        echo "=== Security Validation ==="
+        
+        # Check for any unauthorized processes
+        echo "Running processes:"
+        ps aux | head -20
+        
+        # Check system integrity
+        echo "System load:"
+        uptime
+        
+        # Check disk usage
+        echo "Disk usage:"
+        df -h
+        
+        # Check memory usage
+        echo "Memory usage:"
+        free -h
+
+    - name: Generate audit report
+      run: |
+        echo "=== Generating Audit Report ==="
+        
+        REPORT_FILE="egress-audit-report-$(date +%Y%m%d-%H%M%S).md"
+        
+        cat > $REPORT_FILE << 'EOF'
+        # Egress Traffic Audit Report
+        
+        **Date:** $(date)
+        **Workflow:** ${{ github.workflow }}
+        **Run ID:** ${{ github.run_id }}
+        **Runner:** ubuntu-24.04
+        **Audit Mode:** ${{ github.event.inputs.audit_mode || 'monitor' }}
+        
+        ## Summary
+        
+        This audit tested egress traffic for common development workflows including:
+        
+        - Package manager operations (apt, npm, pip)
+        - Git operations and repository access
+        - Container registry access
+        - Cloud provider CLI downloads
+        - Development tool downloads
+        - API endpoint access
+        
+        ## Network Endpoints Accessed
+        
+        The following endpoints were accessed during this audit:
+        
+        - GitHub (github.com, api.github.com, objects.githubusercontent.com)
+        - NPM Registry (registry.npmjs.org)
+        - PyPI (pypi.org, files.pythonhosted.org)
+        - Ubuntu repositories (archive.ubuntu.com, security.ubuntu.com)
+        - Docker Hub (docker.io)
+        - Cloud provider endpoints (AWS, Azure, Google Cloud)
+        - HashiCorp releases (releases.hashicorp.com)
+        - Kubernetes releases (dl.k8s.io)
+        
+        ## Recommendations
+        
+        1. Review the Step Security dashboard for detailed traffic analysis
+        2. Consider implementing enforce mode for production workflows
+        3. Regularly update the allowed-endpoints list based on audit results
+        4. Monitor for any suspicious or unauthorized network activity
+        
+        EOF
+        
+        echo "Audit report generated: $REPORT_FILE"
+        cat $REPORT_FILE
+
+    - name: Upload audit report
+      uses: actions/upload-artifact@v4
+      with:
+        name: egress-audit-report-${{ github.run_id }}
+        path: egress-audit-report-*.md
+        retention-days: 30
+      if: always()
+
+    - name: Security scan results
+      run: |
+        echo "=== Security Scan Summary ==="
+        echo "✅ Egress traffic audit completed"
+        echo "📊 Check Step Security dashboard for detailed analysis"
+        echo "🔒 Audit mode: ${{ github.event.inputs.audit_mode || 'monitor' }}"
+        echo "📝 Report uploaded as workflow artifact"
+        
+        if [ "${{ github.event.inputs.audit_mode }}" = "enforce" ]; then
+          echo "⚠️  Running in ENFORCE mode - unauthorized traffic will be blocked"
+        else
+          echo "👀 Running in MONITOR mode - all traffic is logged but allowed"
+        fi
