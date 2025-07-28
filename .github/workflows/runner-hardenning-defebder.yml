@@ -130,24 +130,6 @@ jobs:
         git remote -v
 
 
-    - name: Test API endpoints
-      run: |
-        echo "=== Testing various API endpoints ==="
-        
-        # GitHub API
-        echo "Testing GitHub API..."
-        curl -s https://api.github.com/repos/actions/runner/releases/latest | jq '.tag_name'
-        
-        # Public APIs
-        echo "Testing public APIs..."
-        curl -s https://httpbin.org/get | jq '.headers'
-        curl -s https://api.ipify.org?format=json | jq '.'
-        
-        # Check internet connectivity
-        echo "Testing internet connectivity..."
-        ping -c 3 google.com
-        ping -c 3 github.com
-
 
     - name: Network traffic analysis
       run: |
