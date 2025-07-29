@@ -1,6 +1,9 @@
 name: Egress Traffic Audit for Ubuntu 24.04
 
 on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: '*/10 * * * *'
   workflow_dispatch:
     inputs:
       audit_mode:
@@ -25,7 +28,7 @@ jobs:
       uses: step-security/harden-runner@v2
       with:
         # Audit mode - set to 'enforce' to block unauthorized traffic
-        egress-policy: ${{ github.event.inputs.audit_mode || 'monitor' }}
+        egress-policy: audit
         # Disable sudo to prevent privilege escalation
         disable-sudo: false
         # Disable file monitoring for performance (focus on network only)
