@@ -1,9 +1,6 @@
 name: Egress Traffic Audit for Ubuntu 24.04
 
 on:
-  schedule:
-    # Runs every 5 minutes
-    - cron: '*/10 * * * *'
   workflow_dispatch:
     inputs:
       audit_mode:
