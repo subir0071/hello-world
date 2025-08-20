@@ -1,0 +1,19 @@
+name: Check Az Module Version
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-az-version:
+    name: Print Az Module Version
+    runs-on: windows-2022
+
+    steps:
+      - name: Display PowerShell Az Module Version
+        shell: pwsh
+        run: |
+          if (Get-Module -ListAvailable -Name Az) {
+            Get-Module -ListAvailable -Name Az | Select-Object Name, Version, Path
+          } else {
+            Write-Host "Az module is not installed."
+          }
